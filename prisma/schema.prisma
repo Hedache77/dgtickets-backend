@@ -136,8 +136,7 @@ model Ticket {
 }
 
 model Rating {
-  id          Int     @id @default(autoincrement())
-  code        String  @unique
+  id          Int     @id @unique @default(autoincrement())
   value       Int
   description String?
   ticketId    Int     @unique

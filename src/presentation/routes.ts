@@ -8,6 +8,8 @@ import { UserRoutes } from "./users/router";
 import { CityRoutes } from "./cities/routes";
 import { HeadquarterRoutes } from "./headquarter/routes";
 import { TicketRoutes_ } from "./tickets_/router";
+import { PQRRoutes } from "./pqr/routes";
+import { ModuleRoutes } from "./module/routes";
 
 export class AppRoutes {
   static get routes(): Router {
@@ -29,6 +31,8 @@ export class AppRoutes {
     router.use("/api/cities", CityRoutes.routes);
     router.use("/api/headquarters", [AuthMiddlewre.validateJWT], HeadquarterRoutes.routes);
     router.use("/api/tickets_", [AuthMiddlewre.validateJWT], TicketRoutes_.routes);
+    router.use("/api/pqrs", PQRRoutes.routes);
+    router.use("/api/modules", ModuleRoutes.routes);
 
     return router;
   }

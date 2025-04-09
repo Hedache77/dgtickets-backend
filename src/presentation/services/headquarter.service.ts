@@ -103,11 +103,11 @@ export class HeadquarterService {
 
     try {
 
-      function toBoolean(value: any): boolean {
-        return value === "true" || value === true;
+      function toBoolean(value: string): boolean {
+        return value.toLowerCase() === 'true';
       }
 
-      let valIsActive = toBoolean(updateHeadquarterDto.isActive)
+      let valIsActive = toBoolean(updateHeadquarterDto.isActive.toString())
 
 
       const headquarter = await prisma.headquarter.update({

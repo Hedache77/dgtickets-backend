@@ -25,5 +25,11 @@ export * from './dtos/headquarter/update-headquarter.dto';
 export * from './dtos/ticket/create-ticket.dto';
 export * from './dtos/ticket/update-ticket.dto';
 export * from './dtos/ticket/get-by-id-ticket.dto';
+export * from './dtos/pqr/create-pqr.dto';
+export * from './dtos/pqr/get-by-id-pqr.dto';
+export * from './dtos/pqr/update-pqr.dto';
+export * from './dtos/module/create-module.dto';
+export * from './dtos/module/get-by-id-module.dto';
+export * from './dtos/module/update-module.dto';
 
 export * from './dtos/shared/pagination.dto';

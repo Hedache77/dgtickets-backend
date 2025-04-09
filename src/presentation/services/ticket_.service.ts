@@ -13,11 +13,11 @@ export class TicketService_ {
 
   async createTicket(createTicketDto: CreateTicketDto) {
     try {
-      function toBoolean(value: any): boolean {
-        return value === "true" || value === true;
+      function toBoolean(value: string): boolean {
+        return value.toLowerCase() === 'true';
       }
 
-      let valIsActive = toBoolean(createTicketDto.priority);
+      let valIsActive = toBoolean(createTicketDto.priority.toString());
 
       const ticket = await prisma.ticket.create({
         data: {
@@ -44,11 +44,11 @@ export class TicketService_ {
     if (!ticketFind) throw CustomError.badRequest("Ticket not exist");
 
     try {
-      function toBoolean(value: any): boolean {
-        return value === "true" || value === true;
+      function toBoolean(value: string): boolean {
+        return value.toLowerCase() === 'true';
       }
 
-      let valPriority = toBoolean(updateTicketDto.priority);
+      let valPriority = toBoolean(updateTicketDto.priority.toString());
 
       const ticket = await prisma.ticket.update({
         where: { id: ticketFind.id },
