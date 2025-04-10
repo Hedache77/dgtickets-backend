@@ -14,7 +14,7 @@ export class TicketService_ {
   async createTicket(createTicketDto: CreateTicketDto) {
     try {
       function toBoolean(value: string): boolean {
-        return value.toLowerCase() === 'true';
+        return value.toLowerCase() === "true";
       }
 
       let valIsActive = toBoolean(createTicketDto.priority.toString());
@@ -45,7 +45,7 @@ export class TicketService_ {
 
     try {
       function toBoolean(value: string): boolean {
-        return value.toLowerCase() === 'true';
+        return value.toLowerCase() === "true";
       }
 
       let valPriority = toBoolean(updateTicketDto.priority.toString());

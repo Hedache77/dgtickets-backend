@@ -2,13 +2,10 @@ import { UuidAdapter } from "../../config";
 import { prisma } from "../../data/postgres";
 import {
   CreatePQRDto,
-  CreateTicketDto,
   CustomError,
   GetPQRByIdDto,
-  GetTicketByIdDto,
   PaginationDto,
   UpdatePQRDto,
-  UpdateTicketDto,
 } from "../../domain";
 
 export class PQRService {

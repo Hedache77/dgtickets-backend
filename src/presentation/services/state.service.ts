@@ -46,7 +46,10 @@ export class StateService {
     if (!id) throw CustomError.badRequest(`${id} is not a number`);
 
     try {
-      const state = await prisma.state.findFirst({ where: { id }, include: { country: { select: { name: true } } }, });
+      const state = await prisma.state.findFirst({
+        where: { id },
+        include: { country: { select: { name: true } } },
+      });
 
       if (!state) throw CustomError.notFound("State not found");
 
@@ -92,7 +95,6 @@ export class StateService {
     }
   }
 
-
   async updateState(updateStateDto: UpdateStateDto) {
     const stateFind = await prisma.state.findFirst({
       where: { name: updateStateDto.name },
@@ -105,11 +107,11 @@ export class StateService {
         where: { id: stateFind.id },
         data: {
           name:
-          stateFind.name != updateStateDto.name
+            stateFind.name != updateStateDto.name
               ? updateStateDto.name
               : stateFind.name,
           image:
-          stateFind.image != updateStateDto.image
+            stateFind.image != updateStateDto.image
               ? updateStateDto.image
               : stateFind.image,
         },
@@ -122,5 +124,4 @@ export class StateService {
       throw CustomError.internalServer(`${error}`);
     }
   }
-
 }

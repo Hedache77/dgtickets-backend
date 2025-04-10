@@ -1,14 +1,10 @@
 import { prisma } from "../../data/postgres";
 import {
-  CreateCountryDto,
   CreateHeadquarterDto,
   CustomError,
   PaginationDto,
-  UpdateCountryDto,
   UpdateHeadquarterDto,
-  UserEntity,
 } from "../../domain";
-import { GetCountryByIdDto } from "../../domain/dtos/country/get-by-id-country.dto";
 import { GetHeadquarterByIdDto } from "../../domain/dtos/headquarter/get-by-id-headquarter.dto";
 
 export class HeadquarterService {

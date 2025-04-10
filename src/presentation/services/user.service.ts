@@ -1,40 +1,36 @@
 import { bcryptAdapter } from "../../config";
 import { prisma } from "../../data/postgres";
 import {
-  CreateCountryDto,
   CreateUserDto,
   CustomError,
   GetUserByIdDto,
   PaginationDto,
-  UpdateCountryDto,
   UpdateUserDto,
-  UserEntity,
 } from "../../domain";
-import { GetCountryByIdDto } from "../../domain/dtos/country/get-by-id-country.dto";
 
 export class UserService {
   constructor() {}
 
   async createUser(createUserDto: CreateUserDto) {
+    const existUser = await prisma.user.findFirst({
+      where: { email: createUserDto.email },
+    });
+    if (existUser) throw CustomError.badRequest("Email already exist");
 
-    const existUser = await prisma.user.findFirst({ where: { email: createUserDto.email } });
-    if( existUser ) throw CustomError.badRequest('Email already exist');
-
-
-    const existCity = await prisma.user.findFirst({ where: { cityId: +createUserDto.cityId } });
-    if( !existCity ) throw CustomError.badRequest('City not exist');
-
-
+    const existCity = await prisma.user.findFirst({
+      where: { cityId: +createUserDto.cityId },
+    });
+    if (!existCity) throw CustomError.badRequest("City not exist");
 
     try {
       const user = await prisma.user.create({
         data: {
-            firstName: createUserDto.firstName,
-            lastName: createUserDto.lastName,
-            email: createUserDto.email,
-            password: bcryptAdapter.hash(createUserDto.password),
-            photo: createUserDto.photo,
-            cityId: +createUserDto.cityId
+          firstName: createUserDto.firstName,
+          lastName: createUserDto.lastName,
+          email: createUserDto.email,
+          password: bcryptAdapter.hash(createUserDto.password),
+          photo: createUserDto.photo,
+          cityId: +createUserDto.cityId,
         },
       });
 
@@ -89,10 +85,8 @@ export class UserService {
             ? `/api/users?page=${page + 1}&limit=${limit}`
             : null,
         prev:
-          page - 1 > 0
-            ? `/api/users?page=${page - 1}&limit=${limit}`
-            : null,
-            users
+          page - 1 > 0 ? `/api/users?page=${page - 1}&limit=${limit}` : null,
+        users,
       };
     } catch (error) {
       throw CustomError.internalServer("Internal Server Error");
@@ -114,23 +108,22 @@ export class UserService {
             userFind.firstName != updateUserDto.firstName
               ? updateUserDto.firstName
               : userFind.firstName,
-              lastName:
+          lastName:
             userFind.lastName != updateUserDto.lastName
               ? updateUserDto.lastName
               : userFind.lastName,
-              password:
-              userFind.password != updateUserDto.password
-                ? updateUserDto.password
-                : userFind.password,
-                photo:
-              userFind.photo != updateUserDto.photo
-                ? updateUserDto.photo
-                : userFind.photo,
-                userType:
-              userFind.userType != updateUserDto.userType
-                ? updateUserDto.userType
-                : userFind.userType,
-              
+          password:
+            userFind.password != updateUserDto.password
+              ? updateUserDto.password
+              : userFind.password,
+          photo:
+            userFind.photo != updateUserDto.photo
+              ? updateUserDto.photo
+              : userFind.photo,
+          userType:
+            userFind.userType != updateUserDto.userType
+              ? updateUserDto.userType
+              : userFind.userType,
         },
       });
 

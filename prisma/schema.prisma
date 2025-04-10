@@ -118,7 +118,7 @@ model Module {
 
 model Ticket {
   id            Int          @id @default(autoincrement())
-  code          String
+  code          String       @unique
   ticketType    TicketStatus @default(PENDING)
   orderDate     DateTime     @default(now())
   serviceData   DateTime?

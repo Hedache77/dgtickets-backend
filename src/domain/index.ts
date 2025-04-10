@@ -31,5 +31,11 @@ export * from './dtos/pqr/update-pqr.dto';
 export * from './dtos/module/create-module.dto';
 export * from './dtos/module/get-by-id-module.dto';
 export * from './dtos/module/update-module.dto';
+export * from './dtos/rating/create-rating.dto';
+export * from './dtos/rating/get-by-id-rating.dto';
+export * from './dtos/rating/update-rating.dto';
+export * from './dtos/medicine-stock/create-medicine-stock.dto';
+export * from './dtos/medicine-stock/get-by-id-medicine-stock.dto';
+export * from './dtos/medicine-stock/update-medicine-stock.dto';
 
 export * from './dtos/shared/pagination.dto';

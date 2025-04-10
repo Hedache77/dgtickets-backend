@@ -1,17 +1,10 @@
-import { UuidAdapter } from "../../config";
 import { prisma } from "../../data/postgres";
 import {
   CreateModuleDto,
-  CreatePQRDto,
-  CreateTicketDto,
   CustomError,
   GetModuleByIdDto,
-  GetPQRByIdDto,
-  GetTicketByIdDto,
   PaginationDto,
   UpdateModuleDto,
-  UpdatePQRDto,
-  UpdateTicketDto,
 } from "../../domain";
 
 export class ModuleService {
@@ -19,13 +12,11 @@ export class ModuleService {
 
   async createModule(createModuleDto: CreateModuleDto) {
     try {
-
       const moduleExist = await prisma.module.findFirst({
         where: { name: createModuleDto.name },
       });
-  
-      if (moduleExist) throw CustomError.badRequest("Module already exist");
 
+      if (moduleExist) throw CustomError.badRequest("Module already exist");
 
       const module = await prisma.module.create({
         data: {
@@ -42,7 +33,6 @@ export class ModuleService {
     }
   }
 
-
   async updateModule(updateModuleDto: UpdateModuleDto) {
     const moduleFind = await prisma.module.findFirst({
       where: { id: +updateModuleDto.id },
@@ -53,8 +43,8 @@ export class ModuleService {
     try {
       let valActive = toBoolean(updateModuleDto.isActive.toString());
 
-      function toBoolean(value: string): boolean {      
-        return value.toLowerCase() === 'true';
+      function toBoolean(value: string): boolean {
+        return value.toLowerCase() === "true";
       }
 
       const module = await prisma.module.update({
@@ -62,13 +52,11 @@ export class ModuleService {
 
         data: {
           name:
-          moduleFind.name != updateModuleDto.name
+            moduleFind.name != updateModuleDto.name
               ? updateModuleDto.name
               : moduleFind.name,
           isActive:
-          moduleFind.isActive != valActive
-          ? valActive
-          : moduleFind.isActive,
+            moduleFind.isActive != valActive ? valActive : moduleFind.isActive,
         },
       });
 
@@ -111,7 +99,7 @@ export class ModuleService {
     }
   }
 
-async getModuleById(getModuleByIdDto: GetModuleByIdDto) {
+  async getModuleById(getModuleByIdDto: GetModuleByIdDto) {
     const { id } = getModuleByIdDto;
 
     if (!id) throw CustomError.badRequest("id property is required");
