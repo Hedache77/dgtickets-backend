@@ -22,7 +22,7 @@ export class AuthRoutes {
 
     const controller = new AuthController(authService);
     
-    // Definir las rutas
+
     router.post('/login', controller.loginUser );
     router.post('/register', controller.registerUser );
 

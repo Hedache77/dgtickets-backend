@@ -42,10 +42,18 @@ export class RatingService {
   }
 
   async updatePQR(updateRatingDto: UpdateRatingDto) {
-    const ratingFind = await prisma.rating.findFirst({
-      where: { id: +updateRatingDto.id },
-    });
 
+
+    const id = +updateRatingDto.id;
+
+    if (!id) throw CustomError.badRequest("Id property is required");
+
+    if (!id) throw CustomError.badRequest(`${id} is not a number`);
+
+    const ratingFind = await prisma.rating.findFirst({
+      where: { id },
+    });
+    
     if (!ratingFind) throw CustomError.badRequest("Rating not exist");
 
     try {

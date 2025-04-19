@@ -34,11 +34,24 @@ export class ModuleService {
   }
 
   async updateModule(updateModuleDto: UpdateModuleDto) {
+
+    const id = +updateModuleDto.id;
+
+    if (!id) throw CustomError.badRequest("Id property is required");
+
+    if (!id) throw CustomError.badRequest(`${id} is not a number`);
+
     const moduleFind = await prisma.module.findFirst({
-      where: { id: +updateModuleDto.id },
+      where: { id },
+    });
+    
+    if (!moduleFind) throw CustomError.badRequest("Module not exist");
+
+    const existSameName = await prisma.module.findFirst({
+      where: { name: updateModuleDto.name },
     });
 
-    if (!moduleFind) throw CustomError.badRequest("Module not exist");
+    if (existSameName) throw CustomError.badRequest("Module name already exist");
 
     try {
       let valActive = toBoolean(updateModuleDto.isActive.toString());

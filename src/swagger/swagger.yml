@@ -1,0 +1,1996 @@
+openapi: 3.0.4
+info:
+  title: Swagger Petstore - OpenAPI 3.0
+  description: |-
+    This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about
+    Swagger at [https://swagger.io](https://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!
+    You can now help us improve the API whether it's by making changes to the definition itself or to the code.
+    That way, with time, we can improve the API in general, and expose some of the new features in OAS3.
+
+    Some useful links:
+    - [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)
+    - [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)
+  termsOfService: https://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.12
+externalDocs:
+  description: Find out more about Swagger
+  url: https://swagger.io
+servers:
+  - url: https://petstore3.swagger.io/api/v3
+tags:
+  - name: country
+    description: Everything about Countries
+  - name: state
+    description: Everything about States
+  - name: city
+    description: Everything about Cities
+  - name: user
+    description: Everything about Users
+  - name: pqrs
+    description: Everything about PQRS
+  - name: headquarter
+    description: Everything about Headquarters
+  - name: module
+    description: Everything about Modules
+  - name: ticket
+    description: Everything about Tickets
+  - name: rating
+    description: Everything about Ratings
+  - name: medicine_stock
+    description: Everything about Medicine Stock
+security:
+  - bearerAuth: []
+paths:
+  /api/countries:
+    post:
+      tags:
+        - country
+      summary: Create a new country
+      description: Crea un nuevo país con nombre e imagen.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - image
+              properties:
+                name:
+                  type: string
+                  example: Colombia
+                image:
+                  type: string
+                  example: https://example.com/images/colombia.png
+      responses:
+        '201':
+          description: Country created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Country'
+        '400':
+          description: Invalid input
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - country
+      summary: Get all countries.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          required: false
+          description: Página actual para la paginación (opcional)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          required: false
+          description: Número de tickets por página (opcional)
+      description: Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.
+      operationId: getCountries
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Country'
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Country'
+        '400':
+          description: Invalid tag value
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - bearerAuth: []
+  /api/countries/{id}:
+    get:
+      tags:
+        - country
+      summary: Finds country by id.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: false
+          description: ID del ticket a buscar (opcional)
+      description: Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.
+      operationId: findCountryById
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Country'
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Country'
+        '400':
+          description: Invalid tag value
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - country
+      summary: Update an existing country
+      description: Actualiza el nombre o imagen de un país existente usando su ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del país a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Colombia Actualizado
+                image:
+                  type: string
+                  example: https://example.com/images/colombia-new.png
+                isActive:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Country updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Country'
+        '400':
+          description: Invalid input
+        '404':
+          description: Country not found
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+  /api/states:
+    post:
+      tags:
+        - state
+      summary: Create a new state
+      description: Crea un nuevo estado con nombre, imagen, estado activo e ID del país al que pertenece.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - image
+                - countryId
+              properties:
+                name:
+                  type: string
+                  example: Antioquia
+                image:
+                  type: string
+                  example: https://example.com/images/antioquia.png
+                isActive:
+                  type: boolean
+                  example: true
+                countryId:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: State created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/State'
+        '400':
+          description: Invalid input
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - state
+      summary: Get all states
+      description: Obtiene todos los estados registrados en el sistema.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          required: false
+          description: Página actual para la paginación (opcional)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          required: false
+          description: Número de estados por página (opcional)
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/State'
+        '400':
+          description: Invalid input
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - bearerAuth: []
+
+/api/states/{id}:
+  get:
+    tags:
+      - state
+    summary: Find state by ID
+    description: Devuelve un estado específico por su ID.
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: ID del estado a buscar
+    responses:
+      '200':
+        description: successful operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/State'
+      '404':
+        description: State not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+    security:
+      - bearerAuth: []
+
+  put:
+    tags:
+      - state
+    summary: Update an existing state
+    description: Actualiza los datos de un estado existente.
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ID del estado a actualizar
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Antioquia Actualizado
+              image:
+                type: string
+                example: https://example.com/images/antioquia-updated.png
+              isActive:
+                type: boolean
+                example: false
+              countryId:
+                type: integer
+                example: 1
+    responses:
+      '200':
+        description: State updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/State'
+      '400':
+        description: Invalid input
+      '404':
+        description: State not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+/api/cities:
+  post:
+    tags:
+      - city
+    summary: Create a new city
+    description: Crea una nueva ciudad con nombre, imagen, estado asociado e indicador de estado activo.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - image
+              - stateId
+            properties:
+              name:
+                type: string
+                example: Medellín
+              image:
+                type: string
+                example: https://example.com/images/medellin.png
+              isActive:
+                type: boolean
+                example: true
+              stateId:
+                type: integer
+                example: 1
+    responses:
+      '201':
+        description: City created successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/City'
+      '400':
+        description: Invalid input
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  get:
+    tags:
+      - city
+    summary: Get all cities.
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        required: false
+        description: Página actual para la paginación (opcional)
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        required: false
+        description: Número de registros por página (opcional)
+    description: Obtiene todas las ciudades registradas.
+    operationId: getCities
+    responses:
+      '200':
+        description: successful operation
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/City'
+      '400':
+        description: Invalid tag value
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+/api/cities/{id}:
+  get:
+    tags:
+      - city
+    summary: Finds city by ID
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: ID de la ciudad a buscar
+    description: Obtiene una ciudad por su ID.
+    operationId: findCityById
+    responses:
+      '200':
+        description: successful operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/City'
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: City not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  put:
+    tags:
+      - city
+    summary: Update an existing city
+    description: Actualiza los datos de una ciudad existente por su ID.
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ID de la ciudad a actualizar
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Medellín Actualizada
+              image:
+                type: string
+                example: https://example.com/images/medellin-new.png
+              isActive:
+                type: boolean
+                example: false
+              stateId:
+                type: integer
+                example: 2
+    responses:
+      '200':
+        description: City updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/City'
+      '400':
+        description: Invalid input
+      '404':
+        description: City not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+/api/users:
+  post:
+    tags:
+      - user
+    summary: Create a new user
+    description: Crea un nuevo usuario con nombre, correo, contraseña, tipo de usuario, ciudad, etc.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - firstName
+              - lastName
+              - email
+              - password
+              - cityId
+            properties:
+              firstName:
+                type: string
+                example: Juan
+              lastName:
+                type: string
+                example: Pérez
+              photo:
+                type: string
+                example: https://example.com/photos/profile.jpg
+              userType:
+                type: string
+                enum: [ADMIN_ROLE, USER_ROLE, ADVISER_ROLE]
+                default: USER_ROLE
+              email:
+                type: string
+                format: email
+                example: juan.perez@example.com
+              password:
+                type: string
+                format: password
+                example: Password123!
+              emailValidated:
+                type: boolean
+                default: false
+              isActive:
+                type: boolean
+                default: true
+              cityId:
+                type: integer
+                example: 6
+    responses:
+      '201':
+        description: User created successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      '400':
+        description: Invalid input
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  get:
+    tags:
+      - user
+    summary: Get all users
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        required: false
+        description: Página actual para la paginación (opcional)
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        required: false
+        description: Número de usuarios por página (opcional)
+    description: Obtiene la lista completa de usuarios registrados.
+    responses:
+      '200':
+        description: successful operation
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
+      '400':
+        description: Invalid query parameters
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+    security:
+      - bearerAuth: []
+
+/api/users/{id}:
+  get:
+    tags:
+      - user
+    summary: Find user by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: ID del usuario a consultar
+    description: Retorna los detalles del usuario correspondiente al ID proporcionado.
+    responses:
+      '200':
+        description: successful operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      '404':
+        description: User not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+    security:
+      - bearerAuth: []
+
+  put:
+    tags:
+      - user
+    summary: Update an existing user
+    description: Actualiza los datos de un usuario existente usando su ID.
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ID del usuario a actualizar
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              firstName:
+                type: string
+                example: Juan Actualizado
+              lastName:
+                type: string
+                example: Pérez Actualizado
+              photo:
+                type: string
+                example: https://example.com/photos/updated.jpg
+              userType:
+                type: string
+                enum: [ADMIN_ROLE, USER_ROLE, ADVISER_ROLE]
+              email:
+                type: string
+                format: email
+              password:
+                type: string
+              emailValidated:
+                type: boolean
+              isActive:
+                type: boolean
+              cityId:
+                type: integer
+    responses:
+      '200':
+        description: User updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      '400':
+        description: Invalid input
+      '404':
+        description: User not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+/api/pqrs:
+  post:
+    tags:
+      - pqrs
+    summary: Create a new PQRS
+    description: Crea un nuevo registro PQRS.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - code
+              - description
+              - userId
+            properties:
+              code:
+                type: string
+                example: PQRS-2025-001
+              description:
+                type: string
+                example: Solicitud de información sobre disponibilidad de medicamentos.
+              userId:
+                type: integer
+                example: 12
+    responses:
+      '201':
+        description: PQRS created successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pqrs'
+      '400':
+        description: Invalid input
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  get:
+    tags:
+      - pqrs
+    summary: Get all PQRS entries
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        required: false
+        description: Página actual para la paginación (opcional)
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        required: false
+        description: Cantidad de resultados por página (opcional)
+    responses:
+      '200':
+        description: successful operation
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Pqrs'
+      '400':
+        description: Invalid tag value
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+/api/pqrs/{id}:
+  get:
+    tags:
+      - pqrs
+    summary: Find PQRS by ID
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: ID del PQRS a consultar
+    responses:
+      '200':
+        description: successful operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pqrs'
+      '404':
+        description: PQRS not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  put:
+    tags:
+      - pqrs
+    summary: Update an existing PQRS
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ID del PQRS a actualizar
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: PQRS-2025-002
+              description:
+                type: string
+                example: Actualización de solicitud de información
+              userId:
+                type: integer
+                example: 15
+    responses:
+      '200':
+        description: PQRS updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pqrs'
+      '400':
+        description: Invalid input
+      '404':
+        description: PQRS not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+/api/headquarters:
+  post:
+    tags:
+      - headquarter
+    summary: Create a new headquarter
+    description: Crea una nueva sede con nombre, dirección, teléfono, correo, ciudad e indicador de estado.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - address
+              - phoneNumber
+              - email
+              - cityId
+            properties:
+              name:
+                type: string
+                example: Sede Norte
+              address:
+                type: string
+                example: Calle 123 #45-67
+              phoneNumber:
+                type: string
+                example: +57 300 1234567
+              email:
+                type: string
+                format: email
+                example: contacto@sedenorte.com
+              isActive:
+                type: boolean
+                example: true
+              cityId:
+                type: integer
+                example: 6
+    responses:
+      '201':
+        description: Headquarter created successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Headquarter'
+      '400':
+        description: Invalid input
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  get:
+    tags:
+      - headquarter
+    summary: Get all headquarters
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        required: false
+        description: Página actual para la paginación (opcional)
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        required: false
+        description: Número de resultados por página (opcional)
+    description: Obtiene todas las sedes disponibles.
+    operationId: getHeadquarters
+    responses:
+      '200':
+        description: successful operation
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Headquarter'
+      '400':
+        description: Invalid query
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+/api/headquarters/{id}:
+  get:
+    tags:
+      - headquarter
+    summary: Find headquarter by ID
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: ID de la sede a buscar
+    description: Retorna la información de una sede específica por su ID.
+    operationId: findHeadquarterById
+    responses:
+      '200':
+        description: successful operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Headquarter'
+      '404':
+        description: Headquarter not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+  put:
+    tags:
+      - headquarter
+    summary: Update an existing headquarter
+    description: Actualiza la información de una sede existente por su ID.
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ID de la sede a actualizar
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Sede Norte Actualizada
+              address:
+                type: string
+                example: Avenida 456 #89-10
+              phoneNumber:
+                type: string
+                example: +57 301 9876543
+              email:
+                type: string
+                example: nueva@sede.com
+              isActive:
+                type: boolean
+                example: false
+              cityId:
+                type: integer
+                example: 4
+    responses:
+      '200':
+        description: Headquarter updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Headquarter'
+      '400':
+        description: Invalid input
+      '404':
+        description: Headquarter not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+/api/modules:
+  post:
+    tags:
+      - module
+    summary: Create a new module
+    description: Crea un nuevo módulo con nombre y sede.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - headquarterId
+            properties:
+              name:
+                type: string
+                example: Módulo de entrega rápida
+              headquarterId:
+                type: integer
+                example: 1
+              isActive:
+                type: boolean
+                example: true
+    responses:
+      '201':
+        description: Module created successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Module'
+      '400':
+        description: Invalid input
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  get:
+    tags:
+      - module
+    summary: Get all modules
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        required: false
+        description: Página actual para la paginación (opcional)
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        required: false
+        description: Número de registros por página (opcional)
+    description: Obtiene todos los módulos registrados.
+    operationId: getModules
+    responses:
+      '200':
+        description: successful operation
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Module'
+      '400':
+        description: Invalid input
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+/api/modules/{id}:
+  get:
+    tags:
+      - module
+    summary: Get module by ID
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: ID del módulo a consultar
+    description: Retorna el módulo correspondiente al ID proporcionado.
+    operationId: getModuleById
+    responses:
+      '200':
+        description: successful operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Module'
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Module not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  put:
+    tags:
+      - module
+    summary: Update an existing module
+    description: Actualiza la información de un módulo existente usando su ID.
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ID del módulo a actualizar
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Módulo actualizado
+              headquarterId:
+                type: integer
+                example: 2
+              isActive:
+                type: boolean
+                example: false
+    responses:
+      '200':
+        description: Module updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Module'
+      '400':
+        description: Invalid input
+      '404':
+        description: Module not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+/api/tickets_:
+  post:
+    tags:
+      - ticket
+    summary: Create a new ticket
+    description: Crea un nuevo ticket con prioridad, sede y usuario asignado.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - priority
+              - headquarterId
+              - userId
+            properties:
+              priority:
+                type: boolean
+                example: true
+              headquarterId:
+                type: integer
+                example: 1
+              userId:
+                type: integer
+                example: 42
+    responses:
+      '201':
+        description: Ticket created successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+      '400':
+        description: Invalid input
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  get:
+    tags:
+      - ticket
+    summary: Get all tickets
+    description: Obtiene todos los tickets registrados en el sistema.
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        required: false
+        description: Página actual para paginación
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        required: false
+        description: Número de tickets por página
+    responses:
+      '200':
+        description: Lista de tickets
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Ticket'
+      '400':
+        description: Invalid parameters
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+/api/tickets_/{id}:
+  get:
+    tags:
+      - ticket
+    summary: Get ticket by ID
+    description: Busca un ticket por su ID.
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: ID del ticket
+    responses:
+      '200':
+        description: Ticket encontrado
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+      '404':
+        description: Ticket not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  put:
+    tags:
+      - ticket
+    summary: Update a ticket
+    description: Actualiza un ticket existente por ID.
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: ID del ticket
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              priority:
+                type: boolean
+                example: false
+              headquarterId:
+                type: integer
+                example: 3
+              userId:
+                type: integer
+                example: 12
+    responses:
+      '200':
+        description: Ticket updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+      '400':
+        description: Invalid input
+      '404':
+        description: Ticket not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+/api/ratings:
+  post:
+    tags:
+      - rating
+    summary: Create a new rating
+    description: Crea una nueva calificación asociada a un ticket.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - value
+              - ticketId
+            properties:
+              value:
+                type: integer
+                example: 5
+              description:
+                type: string
+                example: Excelente servicio
+              ticketId:
+                type: integer
+                example: 4
+    responses:
+      '201':
+        description: Rating created successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rating'
+      '400':
+        description: Invalid input
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  get:
+    tags:
+      - rating
+    summary: Get all ratings
+    description: Obtiene todas las calificaciones registradas.
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        required: false
+        description: Página actual para paginación
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        required: false
+        description: Número de ratings por página
+    responses:
+      '200':
+        description: Lista de ratings
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Rating'
+      '400':
+        description: Invalid parameters
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+/api/ratings/{id}:
+  get:
+    tags:
+      - rating
+    summary: Get rating by ID
+    description: Obtiene una calificación por su ID.
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: ID del rating
+    responses:
+      '200':
+        description: Rating encontrado
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rating'
+      '404':
+        description: Rating not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  put:
+    tags:
+      - rating
+    summary: Update an existing rating
+    description: Actualiza los valores de una calificación usando su ID.
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: ID del rating a actualizar
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              value:
+                type: integer
+                example: 4
+              description:
+                type: string
+                example: Buen servicio
+              ticketId:
+                type: integer
+                example: 101
+    responses:
+      '200':
+        description: Rating updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rating'
+      '400':
+        description: Invalid input
+      '404':
+        description: Rating not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+/api/medicine-stocks:
+  post:
+    tags:
+      - medicine_stock
+    summary: Create a new medicine stock
+    description: Crea un nuevo registro de medicina en inventario.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - image
+              - quantity
+              - manufacturer
+              - unitOfMeasure
+              - quantityPerUnit
+              - isActive
+            properties:
+              name:
+                type: string
+              image:
+                type: string
+              quantity:
+                type: integer
+                example: 42
+              manufacturer:
+                type: string
+              unitOfMeasure:
+                type: string
+              quantityPerUnit:
+                type: integer
+                example: 42
+              isActive:
+                type: boolean
+    responses:
+      '201':
+        description: Medicine stock created successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Medicine_Stock'
+
+  get:
+    tags:
+      - medicine_stock
+    summary: Get all medicine stocks
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        required: false
+        description: Página para paginación
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        required: false
+        description: Cantidad de ítems por página
+    responses:
+      '200':
+        description: List of medicine stock
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Medicine_Stock'
+      '400':
+        description: Invalid query
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+/api/medicine-stocks/{id}:
+  get:
+    tags:
+      - medicine_stock
+    summary: Find medicine stock by ID
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: ID de la medicina
+    responses:
+      '200':
+        description: Medicine stock found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Medicine_Stock'
+      '404':
+        description: Medicine not found
+      default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security:
+      - bearerAuth: []
+
+  put:
+    tags:
+      - medicine_stock
+    summary: Update a medicine stock record
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              image:
+                type: string
+              quantity:
+                type: integer
+                example: 4
+              manufacturer:
+                type: string
+              unitOfMeasure:
+                type: string
+              quantityPerUnit:
+                type: integer
+                example: 2
+              isActive:
+                type: boolean
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Country:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Colombia"
+        image:
+          type: string
+          example: "https://example.com/images/colombia.png"
+        isActive:
+          type: boolean
+          example: true
+    State:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Antioquia
+        image:
+          type: string
+          example: https://example.com/images/antioquia.png
+        isActive:
+          type: boolean
+          example: true
+        countryId:
+          type: integer
+          example: 1
+    City:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Medellín
+        image:
+          type: string
+          example: https://example.com/images/medellin.png
+        isActive:
+          type: boolean
+          example: true
+        stateId:
+          type: integer
+          example: 1
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        firstName:
+          type: string
+          example: Juan
+        lastName:
+          type: string
+          example: Pérez
+        photo:
+          type: string
+          nullable: true
+          example: https://example.com/photos/profile.jpg
+        userType:
+          type: string
+          enum:
+            - ADMIN_ROLE
+            - USER_ROLE
+            - ADVISER_ROLE
+          default: USER_ROLE
+          example: USER_ROLE
+        email:
+          type: string
+          format: email
+          example: juan.perez@example.com
+        emailValidated:
+          type: boolean
+          default: false
+          example: false
+        password:
+          type: string
+          format: password
+          example: $2a$10$EIX/b6T0cAj5e3W5zD5VVOYcO1t7mUyh7ldGzYdi7Zt
+          description: Hash de la contraseña (no se devuelve en la respuesta, solo para referencia)
+        isActive:
+          type: boolean
+          default: true
+          example: true
+        cityId:
+          type: integer
+          example: 5
+        createdAt:
+          type: string
+          format: date-time
+          example: '2025-04-17T15:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2025-04-17T15:30:00Z'
+      required:
+        - firstName
+        - lastName
+        - email
+        - password
+        - cityId
+    Pqrs:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        code:
+          type: string
+          example: PQRS-2025-001
+        description:
+          type: string
+          example: Solicitud de información sobre disponibilidad de medicamentos.
+        userId:
+          type: integer
+          example: 12
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-04-17T10:00:00Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2025-04-17T11:00:00Z
+    Headquarter:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Sede Norte
+        address:
+          type: string
+          example: Calle 123 #45-67
+        phoneNumber:
+          type: string
+          example: +57 300 1234567
+        email:
+          type: string
+          format: email
+          example: contacto@sedenorte.com
+        isActive:
+          type: boolean
+          example: true
+        cityId:
+          type: integer
+          example: 3
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-04-17T10:00:00Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2025-04-17T11:00:00Z
+    Module:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Módulo de atención preferencial
+        isActive:
+          type: boolean
+          example: true
+        headquarterId:
+          type: integer
+          example: 3
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-04-17T12:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-04-17T12:30:00Z"
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        priority:
+          type: boolean
+          example: false
+        headquarterId:
+          type: integer
+          example: 5
+        userId:
+          type: integer
+          example: 20
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-04-17T09:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-04-17T10:30:00Z"
+    Rating:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        value:
+          type: integer
+          example: 5
+        description:
+          type: string
+          nullable: true
+          example: Excelente atención al cliente
+        ticketId:
+          type: integer
+          example: 101
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-04-17T10:23:54.123Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-04-17T10:23:54.123Z"
+    Medicine_Stock:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Acetaminofén
+        image:
+          type: string
+          example: https://example.com/images/acetaminofen.png
+        quantity:
+          type: integer
+          example: 500
+        manufacturer:
+          type: string
+          example: Genfar
+        unitOfMeasure:
+          type: string
+          example: caja
+        quantityPerUnit:
+          type: integer
+          example: 20
+        isActive:
+          type: boolean
+          example: true
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Ocurrió un error inesperado.
+        code:
+          type: integer
+          example: 500
+    
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header

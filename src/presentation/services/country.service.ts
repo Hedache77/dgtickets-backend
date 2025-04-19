@@ -92,11 +92,25 @@ export class CountryService {
   }
 
   async updateCountry(updateCountryDto: UpdateCountryDto) {
+
+    const id = +updateCountryDto.id;
+
+    if (!id) throw CustomError.badRequest("Id property is required");
+
+    if (!id) throw CustomError.badRequest(`${id} is not a number`);
+
     const countryFind = await prisma.country.findFirst({
+      where: { id },
+    });
+    
+    if (!countryFind) throw CustomError.badRequest("Country not exist");
+
+    const existSameName = await prisma.country.findFirst({
       where: { name: updateCountryDto.name },
     });
 
-    if (!countryFind) throw CustomError.badRequest("Country not exist");
+    if (existSameName) throw CustomError.badRequest("Country name already exist");
+
 
     try {
       const country = await prisma.country.update({

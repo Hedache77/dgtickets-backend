@@ -96,11 +96,26 @@ export class StateService {
   }
 
   async updateState(updateStateDto: UpdateStateDto) {
+
+
+    const id = +updateStateDto.id;
+
+    if (!id) throw CustomError.badRequest("Id property is required");
+
+    if (!id) throw CustomError.badRequest(`${id} is not a number`);
+
     const stateFind = await prisma.state.findFirst({
-      where: { name: updateStateDto.name },
+      where: { id },
     });
 
     if (!stateFind) throw CustomError.badRequest("State not exist");
+    
+
+    const existSameName = await prisma.state.findFirst({
+      where: { name: updateStateDto.name },
+    });
+
+    if (existSameName) throw CustomError.badRequest("State name already exist");
 
     try {
       const state = await prisma.state.update({

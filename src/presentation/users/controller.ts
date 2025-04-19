@@ -64,7 +64,7 @@ export class UsersController {
   };
 
   updateUser = (req: Request, res: Response) => {
-    const [error, updateUserDto] = UpdateUserDto.create(req.body);
+    const [error, updateUserDto] = UpdateUserDto.create({id: +req.params.id, ...req.body});
     if (error) {
       res.status(400).json({ error });
       return;

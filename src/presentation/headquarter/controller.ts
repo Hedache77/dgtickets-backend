@@ -67,7 +67,7 @@ export class HeadquartersController {
   };
 
   updateHeadquarter = (req: Request, res: Response) => {
-    const [error, updateHeadquarterDto] = UpdateHeadquarterDto.create(req.body);
+    const [error, updateHeadquarterDto] = UpdateHeadquarterDto.create({id: +req.params.id, ...req.body});
     if (error) {
       res.status(400).json({ error });
       return;

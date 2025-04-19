@@ -1,16 +1,12 @@
 import { Request, Response } from "express";
 import {
   CreateTicketDto,
-  CreateUserDto,
   CustomError,
   GetTicketByIdDto,
-  GetUserByIdDto,
   PaginationDto,
   UpdateTicketDto,
-  UpdateUserDto,
 } from "../../domain";
 
-import { UserService } from "../services/user.service";
 import { TicketService_ } from "../services/ticket_.service";
 
 export class TicketsController_ {
@@ -68,7 +64,7 @@ export class TicketsController_ {
   };
 
   updateTicket = (req: Request, res: Response) => {
-    const [error, updateTicketDto] = UpdateTicketDto.create(req.body);
+    const [error, updateTicketDto] = UpdateTicketDto.create({code: req.params.code, ...req.body});
     if (error) {
       res.status(400).json({ error });
       return;

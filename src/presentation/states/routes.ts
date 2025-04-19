@@ -19,7 +19,7 @@ export class StateRoutes {
         router.get( '/', statesController.getStates );
         router.get( '/:id', statesController.getStateById );
         router.post( '/', statesController.createState );
-        router.put( '/', statesController.updateState );
+        router.put( '/:id', statesController.updateState );
 
 
 

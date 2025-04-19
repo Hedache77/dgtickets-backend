@@ -95,11 +95,27 @@ export class CityService {
   }
 
   async updateCity(updateCityDto: UpdateCityDto) {
+
+
+    const id = +updateCityDto.id;
+
+    if (!id) throw CustomError.badRequest("Id property is required");
+
+    if (!id) throw CustomError.badRequest(`${id} is not a number`);
+
     const cityFind = await prisma.city.findFirst({
+      where: { id },
+    });
+    
+    if (!cityFind) throw CustomError.badRequest("City not exist");
+
+    const existSameName = await prisma.city.findFirst({
       where: { name: updateCityDto.name },
     });
 
-    if (!cityFind) throw CustomError.badRequest("City not exist");
+    if (existSameName) throw CustomError.badRequest("City name already exist");
+
+    
 
     try {
       const city = await prisma.city.update({

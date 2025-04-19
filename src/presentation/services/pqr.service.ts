@@ -38,10 +38,17 @@ export class PQRService {
   }
 
   async updatePQR(updatePQRDto: UpdatePQRDto) {
-    const pqrFind = await prisma.pQR.findFirst({
-      where: { code: updatePQRDto.code },
-    });
 
+    const id = +updatePQRDto.id;
+
+    if (!id) throw CustomError.badRequest("Id property is required");
+
+    if (!id) throw CustomError.badRequest(`${id} is not a number`);
+
+    const pqrFind = await prisma.pQR.findFirst({
+      where: { id },
+    });
+    
     if (!pqrFind) throw CustomError.badRequest("PQR not exist");
 
     try {

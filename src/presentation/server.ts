@@ -1,6 +1,8 @@
 import express, { Router } from 'express';
 import path from 'path';
 import cors from 'cors';
+import swaggerUI  from 'swagger-ui-express';
+import specs from '../swagger/swagger';
 
 interface Options {
     port: number;
@@ -39,6 +41,9 @@ export default class Server {
             const indexPath = path.join( __dirname + `../../../${ this.publicPath }/index.html` );
             res.sendFile( indexPath );
         });
+
+        // swagger
+        this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup( specs ));
     }
 
      //* Routes

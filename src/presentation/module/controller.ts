@@ -67,7 +67,7 @@ export class ModuleController {
   };
 
   updateModule = (req: Request, res: Response) => {
-    const [error, updateModuleDto] = UpdateModuleDto.create(req.body);
+    const [error, updateModuleDto] = UpdateModuleDto.create({id: +req.params.id, ...req.body});
     if (error) {
       res.status(400).json({ error });
       return;

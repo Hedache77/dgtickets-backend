@@ -15,7 +15,7 @@ export class TicketRoutes_ {
         router.get( '/', ticketController.getTickets );
         router.get( '/:code', ticketController.getTicketById );
         router.post( '/', ticketController.createTicket );
-        router.put( '/', ticketController.updateTicket );
+        router.put( '/:code', ticketController.updateTicket );
 
 
 

@@ -63,7 +63,7 @@ export class PQRController {
   };
 
   updatePQR = (req: Request, res: Response) => {
-    const [error, updatePQRDto] = UpdatePQRDto.create(req.body);
+    const [error, updatePQRDto] = UpdatePQRDto.create({id: +req.params.id, ...req.body});
     if (error) {
       res.status(400).json({ error });
       return;

@@ -68,7 +68,7 @@ export class StatesController {
 
 
     updateState = (req: Request, res: Response) => {
-      const [error, updateStateDto] = UpdateStateDto.create(req.body);
+      const [error, updateStateDto] = UpdateStateDto.create({id: +req.params.id, ...req.body});
       if (error) {
         res.status(400).json({ error });
         return;

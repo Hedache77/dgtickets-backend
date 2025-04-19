@@ -11,14 +11,18 @@ export class MedicineStockService {
   constructor() {}
 
   async createMedicineStock(createMedicineStockDto: CreateMedicineStockDto) {
-    
     try {
       function toBoolean(value: string): boolean {
-        return value.toLowerCase() === 'true';
+        return value.toLowerCase() === "true";
       }
 
       let valActive = toBoolean(createMedicineStockDto.isActive.toString());
 
+      let listHeadquarters: number[] = [];
+
+      if (createMedicineStockDto.headquarters) {
+        listHeadquarters = JSON.parse(createMedicineStockDto.headquarters);
+      }
 
       const medicineStock = await prisma.medicine_Stock.create({
         data: {
@@ -28,7 +32,12 @@ export class MedicineStockService {
           manufacturer: createMedicineStockDto.manufacturer,
           unitOfMeasure: createMedicineStockDto.unitOfMeasure,
           quantityPerUnit: +createMedicineStockDto.quantityPerUnit,
-          isActive: valActive
+          isActive: valActive,
+          headquarters: listHeadquarters.length
+            ? {
+                connect: listHeadquarters.map((id: number) => ({ id: +id })),
+              }
+            : undefined,
         },
       });
 
@@ -47,18 +56,18 @@ export class MedicineStockService {
 
     if (!medicineStockFind) throw CustomError.badRequest("Medicine not exist");
 
-
     try {
-
       function toBoolean(value: string): boolean {
-        return value.toLowerCase() === 'true';
+        return value.toLowerCase() === "true";
       }
 
       let valActive = toBoolean(updateMedicineStockDto.isActive.toString());
 
+      let listHeadquarters: number[] = [];
 
-
-
+      if (updateMedicineStockDto.headquarters) {
+        listHeadquarters = JSON.parse(updateMedicineStockDto.headquarters);
+      }
 
       const medicineStock = await prisma.medicine_Stock.update({
         where: { id: +updateMedicineStockDto.id },
@@ -77,21 +86,29 @@ export class MedicineStockService {
               ? +updateMedicineStockDto.quantity
               : medicineStockFind.quantity,
           manufacturer:
-            medicineStockFind.manufacturer != updateMedicineStockDto.manufacturer
+            medicineStockFind.manufacturer !=
+            updateMedicineStockDto.manufacturer
               ? updateMedicineStockDto.manufacturer
               : medicineStockFind.manufacturer,
           unitOfMeasure:
-            medicineStockFind.unitOfMeasure != updateMedicineStockDto.unitOfMeasure
+            medicineStockFind.unitOfMeasure !=
+            updateMedicineStockDto.unitOfMeasure
               ? updateMedicineStockDto.unitOfMeasure
               : medicineStockFind.unitOfMeasure,
           quantityPerUnit:
-              medicineStockFind.quantityPerUnit != updateMedicineStockDto.quantityPerUnit
+            medicineStockFind.quantityPerUnit !=
+            updateMedicineStockDto.quantityPerUnit
               ? updateMedicineStockDto.quantityPerUnit
               : medicineStockFind.quantityPerUnit,
           isActive:
-          medicineStockFind.isActive != valActive
-          ? valActive
-          : medicineStockFind.isActive,
+            medicineStockFind.isActive != valActive
+              ? valActive
+              : medicineStockFind.isActive,
+          headquarters: listHeadquarters.length
+            ? {
+                connect: listHeadquarters.map((id: number) => ({ id: +id })),
+              }
+            : undefined,
         },
       });
 
@@ -126,8 +143,10 @@ export class MedicineStockService {
             ? `/api/medicine-stocks?page=${page + 1}&limit=${limit}`
             : null,
         prev:
-          page - 1 > 0 ? `/api/medicine-stocks?page=${page - 1}&limit=${limit}` : null,
-          medicineStocks,
+          page - 1 > 0
+            ? `/api/medicine-stocks?page=${page - 1}&limit=${limit}`
+            : null,
+        medicineStocks,
       };
     } catch (error) {
       throw CustomError.internalServer("Internal Server Error");
@@ -140,7 +159,9 @@ export class MedicineStockService {
     if (!id) throw CustomError.badRequest("id property is required");
 
     try {
-      const medicineStock = await prisma.medicine_Stock.findFirst({ where: { id } });
+      const medicineStock = await prisma.medicine_Stock.findFirst({
+        where: { id },
+      });
 
       if (!medicineStock) throw CustomError.notFound("Medicine not found");
 

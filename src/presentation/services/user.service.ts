@@ -94,11 +94,28 @@ export class UserService {
   }
 
   async updateUser(updateUserDto: UpdateUserDto) {
+
+    const id = +updateUserDto.id;
+
+    if (!id) throw CustomError.badRequest("Id property is required");
+
+    if (!id) throw CustomError.badRequest(`${id} is not a number`);
+
     const userFind = await prisma.user.findFirst({
+      where: { id },
+    });
+    
+    if (!userFind) throw CustomError.badRequest("User not exist");
+
+    const emailFind = await prisma.user.findFirst({
       where: { email: updateUserDto.email },
     });
+    
+    if (emailFind) throw CustomError.badRequest("Email already exist");
 
-    if (!userFind) throw CustomError.badRequest("User not exist");
+
+
+
 
     try {
       const user = await prisma.user.update({

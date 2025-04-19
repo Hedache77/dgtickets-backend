@@ -15,7 +15,7 @@ export class HeadquarterRoutes {
         router.get( '/', headquarterController.getHeadquarters );
         router.get( '/:id', headquarterController.getHeadquarterById );
         router.post( '/', headquarterController.createHeadquarter );
-        router.put( '/', headquarterController.updateHeadquarter );
+        router.put( '/:id', headquarterController.updateHeadquarter );
 
 
 

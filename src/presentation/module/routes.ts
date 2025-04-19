@@ -15,7 +15,7 @@ export class ModuleRoutes {
         router.get( '/', moduleController.getModules );
         router.get( '/:id', moduleController.getModuleById );
         router.post( '/', moduleController.createModule );
-        router.put( '/', moduleController.updateModule );
+        router.put( '/:id', moduleController.updateModule );
 
         return router;
     }

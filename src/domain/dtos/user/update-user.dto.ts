@@ -7,6 +7,7 @@ import { regularExps } from "../../../config";
 export class UpdateUserDto {
 
     private constructor(
+        public readonly id: number,
         public firstName: string,
         public lastName: string,
         public userType: Role,
@@ -17,8 +18,9 @@ export class UpdateUserDto {
     ) {}
 
     static create( object: { [key: string]: any } ): [string?, UpdateUserDto?] {
-        const { firstName, lastName, userType, email, password, cityId, photo = '' } = object;
+        const { id, firstName, lastName, userType, email, password, cityId, photo = '' } = object;
 
+        if( !id ) return [ 'Missing id' ];
         if( !firstName ) return [ 'Missing firstName' ];
         if( !lastName ) return [ 'Missing lastName' ];
         if( !email ) return [ 'Missing email' ];
@@ -28,7 +30,7 @@ export class UpdateUserDto {
         if( !cityId ) return [ 'Missing city' ];
         if( !userType ) return [ 'Missing role' ];
     
-        return [undefined, new UpdateUserDto( firstName, lastName, userType, email, password, cityId, photo )];
+        return [undefined, new UpdateUserDto( id, firstName, lastName, userType, email, password, cityId, photo )];
     }
 
 }

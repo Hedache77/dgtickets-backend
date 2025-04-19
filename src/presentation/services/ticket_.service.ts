@@ -37,10 +37,18 @@ export class TicketService_ {
   }
 
   async updateTicket(updateTicketDto: UpdateTicketDto) {
+    
+    const code = updateTicketDto.code;
+    
+    if (!code) throw CustomError.badRequest("Code property is required");
+    
+    if (!code) throw CustomError.badRequest(`${code} is not a number`);
+    
     const ticketFind = await prisma.ticket.findFirst({
       where: { code: updateTicketDto.code },
     });
-
+    
+    
     if (!ticketFind) throw CustomError.badRequest("Ticket not exist");
 
     try {
@@ -49,6 +57,12 @@ export class TicketService_ {
       }
 
       let valPriority = toBoolean(updateTicketDto.priority.toString());
+
+      let listMedicines: number[] = [];
+
+      if (updateTicketDto.medicineIds) {
+        listMedicines = JSON.parse(updateTicketDto.medicineIds);
+      }
 
       const ticket = await prisma.ticket.update({
         where: { id: ticketFind.id },
@@ -70,6 +84,11 @@ export class TicketService_ {
             ticketFind.moduleId != updateTicketDto.moduleId
               ? +updateTicketDto.moduleId
               : +ticketFind.moduleId,
+          medicines: listMedicines.length
+            ? {
+                connect: listMedicines.map((id: number) => ({ id: +id })),
+              }
+            : undefined,
         },
       });
 

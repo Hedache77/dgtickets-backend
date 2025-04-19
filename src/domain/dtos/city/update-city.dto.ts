@@ -3,6 +3,7 @@
 export class UpdateCityDto {
 
     private constructor(
+        public readonly id: number,
         public readonly name: string,
         public readonly image: string        
     ){}
@@ -10,13 +11,14 @@ export class UpdateCityDto {
 
     static create( object: { [key: string]: any } ): [string?, UpdateCityDto?] {
 
-        const { name, image = false } = object;
+        const { id, name, image = false } = object;
 
+        if( !id ) return [ 'Missing id' ];
         if( !name ) return [ 'Missing name' ];
         if( !image ) return [ 'Missing image' ];
 
 
-        return [undefined, new UpdateCityDto(name, image)];
+        return [undefined, new UpdateCityDto(id, name, image)];
 
 
     }

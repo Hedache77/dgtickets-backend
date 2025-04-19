@@ -17,6 +17,12 @@ export class HeadquarterService {
 
     if (headquarter) throw CustomError.badRequest("headquarter already exist");
 
+    let listMedicines: number[] = [];
+
+    if (createHeadquarterDto.medicineIds) {
+      listMedicines = JSON.parse(createHeadquarterDto.medicineIds);
+    }
+
     try {
       const headquarter = await prisma.headquarter.create({
         data: {
@@ -25,7 +31,12 @@ export class HeadquarterService {
           phoneNumber: createHeadquarterDto.phoneNumber,
           email: createHeadquarterDto.email,
           isActive: !!createHeadquarterDto.isActive,
-          cityId: +createHeadquarterDto.cityId
+          cityId: +createHeadquarterDto.cityId,
+          medicines: listMedicines.length
+            ? {
+                connect: listMedicines.map((id: number) => ({ id: +id })),
+              }
+            : undefined,
         },
       });
 
@@ -83,7 +94,7 @@ export class HeadquarterService {
           page - 1 > 0
             ? `/api/headquarters?page=${page - 1}&limit=${limit}`
             : null,
-        headquarters
+        headquarters,
       };
     } catch (error) {
       throw CustomError.internalServer("Internal Server Error");
@@ -91,20 +102,37 @@ export class HeadquarterService {
   }
 
   async updateHeadquarter(updateHeadquarterDto: UpdateHeadquarterDto) {
+
+    const id = +updateHeadquarterDto.id;
+
+    if (!id) throw CustomError.badRequest("Id property is required");
+
+    if (!id) throw CustomError.badRequest(`${id} is not a number`);
+
     const headquarterFind = await prisma.headquarter.findFirst({
+      where: { id },
+    });
+    
+    if (!headquarterFind) throw CustomError.badRequest("Headquarter not exist");
+
+    const existSameName = await prisma.headquarter.findFirst({
       where: { name: updateHeadquarterDto.name },
     });
 
-    if (!headquarterFind) throw CustomError.badRequest("Headquarter not exist");
+    if (existSameName) throw CustomError.badRequest("Headquarter name already exist");
 
     try {
-
       function toBoolean(value: string): boolean {
-        return value.toLowerCase() === 'true';
+        return value.toLowerCase() === "true";
       }
 
-      let valIsActive = toBoolean(updateHeadquarterDto.isActive.toString())
+      let valIsActive = toBoolean(updateHeadquarterDto.isActive.toString());
 
+      let listMedicines: number[] = [];
+
+      if (updateHeadquarterDto.medicineIds) {
+        listMedicines = JSON.parse(updateHeadquarterDto.medicineIds);
+      }
 
       const headquarter = await prisma.headquarter.update({
         where: { id: headquarterFind.id },
@@ -126,6 +154,11 @@ export class HeadquarterService {
             headquarterFind.isActive != valIsActive
               ? valIsActive
               : headquarterFind.isActive,
+          medicines: listMedicines.length
+            ? {
+                connect: listMedicines.map((id: number) => ({ id: +id })),
+              }
+            : undefined,
         },
       });
 

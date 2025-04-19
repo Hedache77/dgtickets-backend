@@ -66,7 +66,7 @@ export class CitiesController {
   };
 
   updateCity = (req: Request, res: Response) => {
-    const [error, updateCityDto] = UpdateCityDto.create(req.body);
+    const [error, updateCityDto] = UpdateCityDto.create({id: +req.params.id, ...req.body});
     if (error) {
       res.status(400).json({ error });
       return;

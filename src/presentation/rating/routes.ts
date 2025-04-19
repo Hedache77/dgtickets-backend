@@ -15,7 +15,7 @@ export class RatingRoutes {
         router.get( '/', ratingController.getRatings );
         router.get( '/:id', ratingController.getRatingById );
         router.post( '/', ratingController.createRating );
-        router.put( '/', ratingController.updateRating );
+        router.put( '/:id', ratingController.updateRating );
 
         return router;
     }

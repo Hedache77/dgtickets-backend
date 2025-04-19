@@ -1,29 +1,36 @@
-
-
 export class UpdateHeadquarterDto {
+  private constructor(
+    public readonly id: number,
+    public readonly name: string,
+    public readonly address: string,
+    public readonly phoneNumber: string,
+    public readonly isActive: boolean,
+    public readonly medicineIds?: string
+  ) {}
 
-    private constructor(
-        public readonly name: string,
-        public readonly address: string,
-        public readonly phoneNumber: string,
-        public readonly isActive: boolean,
-    ){}
+  static create(object: {
+    [key: string]: any;
+  }): [string?, UpdateHeadquarterDto?] {
+    const { id, name, address, phoneNumber, isActive, medicineIds } = object;
 
+    if (!id) return ["Missing id"];
+    if (!name) return ["Missing name"];
+    if (!address) return ["Missing address"];
+    if (!phoneNumber) return ["Missing phoneNumber"];
+    if (!isActive) return ["Missing isActive"];
+    if (typeof !!isActive !== "boolean")
+      return ["isActive is not a valid type"];
 
-    static create( object: { [key: string]: any } ): [string?, UpdateHeadquarterDto?] {
-
-        const { name, address, phoneNumber, isActive } = object;
-
-        if( !name ) return [ 'Missing name' ];
-        if( !address ) return [ 'Missing address' ];
-        if( !phoneNumber ) return [ 'Missing phoneNumber' ];
-        if( !isActive ) return [ 'Missing isActive' ];
-        if( typeof !!isActive !==  'boolean') return [ 'isActive is not a valid type' ];
-
-
-        return [undefined, new UpdateHeadquarterDto(name, address, phoneNumber, isActive)];
-
-
-    }
-
+    return [
+      undefined,
+      new UpdateHeadquarterDto(
+        id,
+        name,
+        address,
+        phoneNumber,
+        isActive,
+        medicineIds
+      ),
+    ];
+  }
 }

@@ -15,8 +15,8 @@ export class CityRoutes {
 
         router.get( '/', cityController.getCities );
         router.get( '/:id', cityController.getCityById );
-        router.post( '/', [AuthMiddlewre.validateJWT], cityController.createCity );
-        router.put( '/',[AuthMiddlewre.validateJWT], cityController.updateCity );
+        router.post( '/', cityController.createCity );
+        router.put( '/:id', cityController.updateCity );
 
 
 
