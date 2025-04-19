@@ -7,11 +7,11 @@ export class UpdateTicketDto {
     public readonly ticketType: TicketStatus,
     public readonly serviceData: Date,
     public readonly moduleId: number,
-    public readonly medicineIds?: string
+    public readonly medicines?: string,
   ) {}
 
   static create(object: { [key: string]: any }): [string?, UpdateTicketDto?] {
-    const { code, priority, ticketType, serviceData, moduleId, medicineIds } =
+    const { code, priority, ticketType, serviceData, moduleId, medicines } =
       object;
 
     if (!code) return ["Missing code"];
@@ -29,7 +29,7 @@ export class UpdateTicketDto {
         ticketType,
         serviceData,
         moduleId,
-        medicineIds
+        medicines
       ),
     ];
   }

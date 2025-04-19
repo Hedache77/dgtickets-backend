@@ -8,13 +8,13 @@ export class CreateHeadquarterDto {
     public readonly email: string,
     public readonly isActive: boolean,
     public readonly cityId: number,
-    public readonly medicineIds?: string
+    public readonly medicines?: string
   ) {}
 
   static create(object: {
     [key: string]: any;
   }): [string?, CreateHeadquarterDto?] {
-    const { name, address, phoneNumber, email, isActive, cityId, medicineIds } =
+    const { name, address, phoneNumber, email, isActive, cityId, medicines } =
       object;
 
     if (!name) return ["Missing name"];
@@ -37,7 +37,7 @@ export class CreateHeadquarterDto {
         email,
         isActive,
         cityId,
-        medicineIds
+        medicines
       ),
     ];
   }

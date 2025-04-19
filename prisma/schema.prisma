@@ -63,34 +63,34 @@ model City {
 }
 
 model Headquarter {
-  id          Int              @id @default(autoincrement())
-  name        String           @unique
-  address     String
-  phoneNumber String
-  email       String
-  isActive    Boolean          @default(true)
-  cityId      Int
-  city        City             @relation(fields: [cityId], references: [id])
-  medicines   Medicine_Stock[] @relation("HeadquarterToMedicine")
-  modules     Module[]
-  tickets     Ticket[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime?        @updatedAt
+  id                   Int                     @id @default(autoincrement())
+  name                 String                  @unique
+  address              String
+  phoneNumber          String
+  email                String
+  isActive             Boolean                 @default(true)
+  cityId               Int
+  city                 City                    @relation(fields: [cityId], references: [id])
+  headquarterMedicines HeadquarterToMedicine[]
+  modules              Module[]
+  tickets              Ticket[]
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime?               @updatedAt
 }
 
 model Medicine_Stock {
-  id              Int           @id @default(autoincrement())
-  name            String
-  image           String
-  quantity        Int
-  manufacturer    String
-  unitOfMeasure   String
-  quantityPerUnit Int
-  isActive        Boolean       @default(true)
-  headquarters    Headquarter[] @relation("HeadquarterToMedicine")
-  tickets         Ticket[]      @relation("TicketMedicine")
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime?     @updatedAt
+  id                   Int                     @id @default(autoincrement())
+  name                 String
+  image                String
+  quantity             Int
+  manufacturer         String
+  unitOfMeasure        String
+  quantityPerUnit      Int
+  isActive             Boolean                 @default(true)
+  headquarterMedicines HeadquarterToMedicine[]
+  ticketMedicines      TicketMedicine[]
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime?               @updatedAt
 }
 
 model User {
@@ -147,10 +147,10 @@ model Ticket {
   user        User        @relation(fields: [userId], references: [id])
   module      Module?     @relation(fields: [moduleId], references: [id])
 
-  medicines Medicine_Stock[] @relation("TicketMedicine")
-  rating    Rating?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime?        @updatedAt
+  ticketMedicines TicketMedicine[]
+  rating          Rating?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime?        @updatedAt
 }
 
 model Rating {
@@ -161,6 +161,32 @@ model Rating {
   ticket      Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime? @updatedAt
+}
+
+model HeadquarterToMedicine {
+  id            Int            @id @default(autoincrement())
+  headquarterId Int
+  medicineId    Int
+  quantity      Int
+  headquarter   Headquarter    @relation(fields: [headquarterId], references: [id])
+  medicine      Medicine_Stock @relation(fields: [medicineId], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime?      @updatedAt
+
+  @@unique([headquarterId, medicineId])
+}
+
+model TicketMedicine {
+  id         Int            @id @default(autoincrement())
+  ticketId   Int
+  medicineId Int
+  quantity   Int
+  ticket     Ticket         @relation(fields: [ticketId], references: [id])
+  medicine   Medicine_Stock @relation(fields: [medicineId], references: [id])
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime?      @updatedAt
+
+  @@unique([ticketId, medicineId])
 }
 
 model TicketDemo {

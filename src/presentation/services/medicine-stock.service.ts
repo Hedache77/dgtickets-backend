@@ -33,11 +33,11 @@ export class MedicineStockService {
           unitOfMeasure: createMedicineStockDto.unitOfMeasure,
           quantityPerUnit: +createMedicineStockDto.quantityPerUnit,
           isActive: valActive,
-          headquarters: listHeadquarters.length
-            ? {
-                connect: listHeadquarters.map((id: number) => ({ id: +id })),
-              }
-            : undefined,
+          // headquarters: listHeadquarters.length
+          //   ? {
+          //       connect: listHeadquarters.map((id: number) => ({ id: +id })),
+          //     }
+          //   : undefined,
         },
       });
 
@@ -104,11 +104,11 @@ export class MedicineStockService {
             medicineStockFind.isActive != valActive
               ? valActive
               : medicineStockFind.isActive,
-          headquarters: listHeadquarters.length
-            ? {
-                connect: listHeadquarters.map((id: number) => ({ id: +id })),
-              }
-            : undefined,
+          // headquarters: listHeadquarters.length
+          //   ? {
+          //       connect: listHeadquarters.map((id: number) => ({ id: +id })),
+          //     }
+          //   : undefined,
         },
       });
 

@@ -17,10 +17,43 @@ export class HeadquarterService {
 
     if (headquarter) throw CustomError.badRequest("headquarter already exist");
 
-    let listMedicines: number[] = [];
+    let medicines = createHeadquarterDto.medicines;
 
-    if (createHeadquarterDto.medicineIds) {
-      listMedicines = JSON.parse(createHeadquarterDto.medicineIds);
+    if (typeof medicines === "string") {
+      try {
+        medicines = JSON.parse(medicines);
+      } catch (error) {
+        throw new Error(`${error}`);
+      }
+    }
+
+    const normalized = Array.isArray(medicines) ? medicines : [medicines];
+
+    const filtered = normalized.filter(
+      (m) => m?.medicineId !== undefined && m?.quantity !== undefined
+    );
+
+    try {
+      for (const med of filtered) {
+        const medicineStock = await prisma.medicine_Stock.findFirst({
+          where: { id: +med.medicineId },
+        });
+
+        if (!medicineStock) throw CustomError.badRequest("Medicine not exist");
+
+        if (med.quantity > medicineStock.quantity) {
+          throw CustomError.badRequest("Not enough stock available");
+        }
+
+        await prisma.medicine_Stock.update({
+          where: { id: +med.medicineId },
+          data: {
+            quantity: medicineStock.quantity - +med.quantity,
+          },
+        });
+      }
+    } catch (error) {
+      throw CustomError.internalServer(`${error}`);
     }
 
     try {
@@ -32,13 +65,24 @@ export class HeadquarterService {
           email: createHeadquarterDto.email,
           isActive: !!createHeadquarterDto.isActive,
           cityId: +createHeadquarterDto.cityId,
-          medicines: listMedicines.length
-            ? {
-                connect: listMedicines.map((id: number) => ({ id: +id })),
-              }
-            : undefined,
+          // medicines: listMedicines.length
+          //   ? {
+          //       connect: listMedicines.map((id: number) => ({ id: +id })),
+          //     }
+          //   : undefined,
         },
       });
+
+      if (filtered.length) {
+        await prisma.headquarterToMedicine.createMany({
+          data: filtered.map((med) => ({
+            headquarterId: headquarter.id,
+            medicineId: med.medicineId,
+            quantity: med.quantity,
+          })),
+          skipDuplicates: true,
+        });
+      }
 
       return {
         headquarter,
@@ -56,7 +100,16 @@ export class HeadquarterService {
     if (!id) throw CustomError.badRequest(`${id} is not a number`);
 
     try {
-      const headquarter = await prisma.headquarter.findFirst({ where: { id } });
+      const headquarter = await prisma.headquarter.findFirst({ 
+        where: { id },
+        include: {
+          headquarterMedicines: {
+            include: {
+              medicine: true
+            }
+          }
+        }
+      });
 
       if (!headquarter) throw CustomError.notFound("Headquarter not found");
 
@@ -121,6 +174,47 @@ export class HeadquarterService {
 
     if (existSameName) throw CustomError.badRequest("Headquarter name already exist");
 
+    let medicines = updateHeadquarterDto.medicines;
+
+    if (typeof medicines === "string") {
+      try {
+        medicines = JSON.parse(medicines);
+      } catch (error) {
+        throw new Error(`${error}`);
+      }
+    }
+
+    const normalized = Array.isArray(medicines) ? medicines : [medicines];
+
+    const filtered = normalized.filter(
+      (m) => m?.medicineId !== undefined && m?.quantity !== undefined
+    );
+
+    try {
+      for (const med of filtered) {
+        const medicineStock = await prisma.medicine_Stock.findFirst({
+          where: { id: +med.medicineId },
+        });
+
+        if (!medicineStock) throw CustomError.badRequest("Medicine not exist");
+
+        if (med.quantity > medicineStock.quantity) {
+          throw CustomError.badRequest("Not enough stock available");
+        }
+
+        await prisma.medicine_Stock.update({
+          where: { id: +med.medicineId },
+          data: {
+            quantity: medicineStock.quantity - +med.quantity,
+          },
+        });
+      }
+    } catch (error) {
+      throw CustomError.internalServer(`${error}`);
+    }
+
+
+
     try {
       function toBoolean(value: string): boolean {
         return value.toLowerCase() === "true";
@@ -128,20 +222,14 @@ export class HeadquarterService {
 
       let valIsActive = toBoolean(updateHeadquarterDto.isActive.toString());
 
-      let listMedicines: number[] = [];
-
-      if (updateHeadquarterDto.medicineIds) {
-        listMedicines = JSON.parse(updateHeadquarterDto.medicineIds);
-      }
-
       const headquarter = await prisma.headquarter.update({
         where: { id: headquarterFind.id },
 
         data: {
-          name:
-            headquarterFind.name != updateHeadquarterDto.name
-              ? updateHeadquarterDto.name
-              : headquarterFind.name,
+          // name:
+          //   headquarterFind.name != updateHeadquarterDto.name
+          //     ? updateHeadquarterDto.name
+          //     : headquarterFind.name,
           address:
             headquarterFind.address != updateHeadquarterDto.address
               ? updateHeadquarterDto.address
@@ -154,13 +242,19 @@ export class HeadquarterService {
             headquarterFind.isActive != valIsActive
               ? valIsActive
               : headquarterFind.isActive,
-          medicines: listMedicines.length
-            ? {
-                connect: listMedicines.map((id: number) => ({ id: +id })),
-              }
-            : undefined,
         },
       });
+
+      if (filtered.length) {
+        await prisma.headquarterToMedicine.createMany({
+          data: filtered.map((med) => ({
+            headquarterId: headquarter.id,
+            medicineId: med.medicineId,
+            quantity: med.quantity,
+          })),
+          skipDuplicates: true,
+        });
+      }
 
       return {
         headquarter,

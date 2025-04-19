@@ -37,19 +37,67 @@ export class TicketService_ {
   }
 
   async updateTicket(updateTicketDto: UpdateTicketDto) {
-    
     const code = updateTicketDto.code;
-    
+
     if (!code) throw CustomError.badRequest("Code property is required");
-    
+
     if (!code) throw CustomError.badRequest(`${code} is not a number`);
-    
+
     const ticketFind = await prisma.ticket.findFirst({
       where: { code: updateTicketDto.code },
     });
-    
-    
+
     if (!ticketFind) throw CustomError.badRequest("Ticket not exist");
+
+    let medicines = updateTicketDto.medicines;
+
+    if (typeof medicines === "string") {
+      try {
+        medicines = JSON.parse(medicines);
+      } catch (error) {
+        throw new Error(`${error}`);
+      }
+    }
+
+    const normalized = Array.isArray(medicines) ? medicines : [medicines];
+
+    const filtered = normalized.filter(
+      (m) => m?.medicineId !== undefined && m?.quantity !== undefined
+    );
+
+    try {
+
+      const module = await prisma.module.findUnique({
+        where: { id: +updateTicketDto.moduleId },
+        select: {
+          headquarterId: true,
+        },
+      });
+
+      for (const med of filtered) {
+        const medicineStock = await prisma.headquarterToMedicine.findFirst({
+          where: { 
+            headquarterId: +module!, 
+            medicineId: +med.medicineId,
+          },
+        });
+
+        if (!medicineStock) throw CustomError.badRequest("Medicine not exist or not available in this headquarter"); 
+
+        if (med.quantity > medicineStock.quantity) {
+          throw CustomError.badRequest("Not enough stock available");
+        }
+
+        await prisma.headquarterToMedicine.update({
+          where: { id: +medicineStock.id },
+          data: {
+            quantity: medicineStock.quantity - +med.quantity,
+          },
+        });
+      }
+    } catch (error) {
+      throw CustomError.internalServer(`${error}`);
+    }
 
     try {
       function toBoolean(value: string): boolean {
@@ -57,12 +105,6 @@ export class TicketService_ {
       }
 
       let valPriority = toBoolean(updateTicketDto.priority.toString());
-
-      let listMedicines: number[] = [];
-
-      if (updateTicketDto.medicineIds) {
-        listMedicines = JSON.parse(updateTicketDto.medicineIds);
-      }
 
       const ticket = await prisma.ticket.update({
         where: { id: ticketFind.id },
@@ -84,13 +126,19 @@ export class TicketService_ {
             ticketFind.moduleId != updateTicketDto.moduleId
               ? +updateTicketDto.moduleId
               : +ticketFind.moduleId,
-          medicines: listMedicines.length
-            ? {
-                connect: listMedicines.map((id: number) => ({ id: +id })),
-              }
-            : undefined,
         },
       });
+
+      if (filtered.length) {
+        await prisma.ticketMedicine.createMany({
+          data: filtered.map((med) => ({
+            ticketId: ticket.id,
+            medicineId: med.medicineId,
+            quantity: med.quantity,
+          })),
+          skipDuplicates: true,
+        });
+      }
 
       return {
         ticket,
@@ -137,7 +185,16 @@ export class TicketService_ {
     if (!code) throw CustomError.badRequest("code property is required");
 
     try {
-      const ticket = await prisma.ticket.findFirst({ where: { code } });
+      const ticket = await prisma.ticket.findFirst({
+        where: { code },
+        include: {
+          ticketMedicines: {
+            include: {
+              medicine: true,
+            },
+          },
+        },
+      });
 
       if (!ticket) throw CustomError.notFound("ticket not found");
 

@@ -5,13 +5,13 @@ export class UpdateHeadquarterDto {
     public readonly address: string,
     public readonly phoneNumber: string,
     public readonly isActive: boolean,
-    public readonly medicineIds?: string
+    public readonly medicines?: string,
   ) {}
 
   static create(object: {
     [key: string]: any;
   }): [string?, UpdateHeadquarterDto?] {
-    const { id, name, address, phoneNumber, isActive, medicineIds } = object;
+    const { id, name, address, phoneNumber, isActive, medicines } = object;
 
     if (!id) return ["Missing id"];
     if (!name) return ["Missing name"];
@@ -29,7 +29,7 @@ export class UpdateHeadquarterDto {
         address,
         phoneNumber,
         isActive,
-        medicineIds
+        medicines
       ),
     ];
   }
