@@ -1,7 +1,7 @@
 import { UuidAdapter } from "../../config/uuid.adapter";
 import { Ticket } from "../../domain/interfaces/ticket";
 import { prisma } from "../../data/postgres";
-import { WssService } from './wss.service';
+import { WssService } from "./wss.service";
 
 export class TicketService {
   constructor(private readonly wssService = WssService.instance) {}
@@ -12,13 +12,16 @@ export class TicketService {
     const lastWorkingOnTicket = await this.getLastWorkingOnTickets();
     this.wssService.sendMessagge("on-last-ticket-number-changed", lastTicket);
     this.wssService.sendMessagge("on-ticket-count-changed", pendingTickets);
-    this.wssService.sendMessagge("on-working-on-ticket-changed", lastWorkingOnTicket);
+    this.wssService.sendMessagge(
+      "on-working-on-ticket-changed",
+      lastWorkingOnTicket
+    );
   };
 
   public getTickets = async () => {
     const tickets = prisma.ticketDemo.findMany();
     return tickets;
-  }
+  };
 
   public getPendingTickets = async () => {
     const pendingTickets = prisma.ticketDemo.findMany({

@@ -7,7 +7,7 @@ export class UpdateTicketDto {
     public readonly ticketType: TicketStatus,
     public readonly serviceData: Date,
     public readonly moduleId: number,
-    public readonly medicines?: string,
+    public readonly medicines?: string
   ) {}
 
   static create(object: { [key: string]: any }): [string?, UpdateTicketDto?] {
@@ -16,6 +16,8 @@ export class UpdateTicketDto {
 
     if (!code) return ["Missing code"];
     if (!priority) return ["Missing priority"];
+    if (priority === undefined) return ["Missing priority"];
+    if (typeof priority !== "boolean") return ["priority is not a valid type"];
     if (!ticketType) return ["Missing ticketType"];
     if (!serviceData) return ["Missing serviceData"];
     if (!moduleId) return ["Missing moduleId"];

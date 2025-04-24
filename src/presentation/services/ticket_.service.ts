@@ -1,5 +1,5 @@
-import { UuidAdapter } from "../../config";
 import { prisma } from "../../data/postgres";
+import { WssService } from "./wss.service";
 import {
   CreateTicketDto,
   CustomError,
@@ -7,9 +7,53 @@ import {
   PaginationDto,
   UpdateTicketDto,
 } from "../../domain";
+import { TicketStatus } from "@prisma/client";
+import { Ticket_ } from "../../domain/interfaces/ticket";
 
 export class TicketService_ {
-  constructor() {}
+  constructor(private readonly wssService = WssService.instance) {}
+
+  private onTicketNumberChanged = async () => {
+    const pendingTickets = await this.getPendingTickets();
+    const lastTicket = await this.getLastTicketNumber();
+    const lastWorkingOnTicket = await this.getLastWorkingOnTickets();
+    this.wssService.sendMessagge("on-last-ticket-number-changed", lastTicket);
+    this.wssService.sendMessagge("on-ticket-count-changed", pendingTickets);
+    this.wssService.sendMessagge(
+      "on-working-on-ticket-changed",
+      lastWorkingOnTicket
+    );
+  };
+
+  public getPendingTickets = async () => {
+    const pendingTickets = await prisma.ticket.findMany({
+      where: {
+        ticketType: TicketStatus.PENDING,
+      },
+    });
+    return pendingTickets;
+  };
+
+  public getLastWorkingOnTickets = async (): Promise<Ticket_[]> => {
+    const lastWorkingOnTicket = await prisma.ticket.findMany({
+      where: {
+        ticketType: TicketStatus.IN_PROGRESS,
+      },
+      orderBy: { orderDate: "desc" },
+    });
+
+    return lastWorkingOnTicket;
+  };
+
+  public getLastTicketNumber = async (
+    headquarterId?: number
+  ): Promise<string> => {
+    const lastTicket = await prisma.ticket.findFirst({
+      where: headquarterId ? { headquarterId } : undefined,
+      orderBy: { orderDate: "desc" },
+    });
+    return lastTicket ? lastTicket.code : "T-000";
+  };
 
   async createTicket(createTicketDto: CreateTicketDto) {
     try {
@@ -18,15 +62,28 @@ export class TicketService_ {
       }
 
       let valIsActive = toBoolean(createTicketDto.priority.toString());
+      const headquarterId = +createTicketDto.headquarterId;
+
+      const prefix = valIsActive ? "P" : "T";
+      const count = await prisma.ticket.count({
+        where: {
+          priority: valIsActive,
+          headquarterId: headquarterId,
+        },
+      });
+      const sequence = count + 1;
+      const code = `${prefix}-${String(sequence).padStart(3, "0")}`;
 
       const ticket = await prisma.ticket.create({
         data: {
-          code: UuidAdapter.v4(),
+          code,
           priority: valIsActive,
-          headquarterId: +createTicketDto.headquarterId,
+          headquarterId: headquarterId,
           userId: +createTicketDto.userId,
         },
       });
+
+      await this.onTicketNumberChanged();
 
       return {
         ticket,

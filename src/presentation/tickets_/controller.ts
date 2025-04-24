@@ -75,4 +75,23 @@ export class TicketsController_ {
       .then((ticket) => res.status(201).json(ticket))
       .catch((error) => this.handleError(error, res));
   };
+
+  public getLastTicket = async (req: Request, res: Response) => {
+    const { headquarterId } = req.query;
+
+    this.ticketService
+      .getLastTicketNumber(headquarterId ? +headquarterId : undefined)
+      .then((ticket) => res.status(201).json(ticket))
+      .catch((error) => this.handleError(error, res));
+  };
+
+  public pendingTickets = async (req: Request, res: Response) => {
+    const pendingTickets = await this.ticketService.getPendingTickets();
+    res.status(201).json(pendingTickets);
+  };
+
+  public workingOn = async (req: Request, res: Response) => {
+    const workingOnTickets = await this.ticketService.getLastWorkingOnTickets();
+    res.status(201).json(workingOnTickets);
+  };
 }

@@ -24,16 +24,16 @@ export class AppRoutes {
       [AuthMiddlewre.validateJWT],
       CountryRoutes.routes
     );
-    router.use("/api/tickets", TicketRoutes.routes);
+    router.use(
+      "/api/tickets",
+
+      TicketRoutes.routes
+    );
     router.use("/api/auth", AuthRoutes.routes);
     router.use("/api/states", [AuthMiddlewre.validateJWT], StateRoutes.routes);
     router.use("/api/users", [AuthMiddlewre.validateJWT], UserRoutes.routes);
-    router.use("/api/cities", [AuthMiddlewre.validateJWT], CityRoutes.routes);
-    router.use(
-      "/api/headquarters",
-      [AuthMiddlewre.validateJWT],
-      HeadquarterRoutes.routes
-    );
+    router.use("/api/cities", CityRoutes.routes);
+    router.use("/api/headquarters", HeadquarterRoutes.routes);
     router.use(
       "/api/tickets_",
       [AuthMiddlewre.validateJWT],
