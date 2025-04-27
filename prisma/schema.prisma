@@ -94,23 +94,23 @@ model Medicine_Stock {
 }
 
 model User {
-  id             Int       @id @default(autoincrement())
-  firstName      String
-  lastName       String
-  photo          String?
-  userType       Role      @default(USER_ROLE)
-  email          String    @unique
-  emailValidated Boolean   @default(false)
-  password       String
-  isActive       Boolean   @default(true)
-  cityId         Int
-  city           City      @relation(fields: [cityId], references: [id])
-  pqrs           PQR[]
-  tickets        Ticket[]
-  modules        Module[]  
-
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime? @updatedAt
+  id                  Int                   @id @default(autoincrement())
+  firstName           String
+  lastName            String
+  photo               String?
+  userType            Role                  @default(USER_ROLE)
+  email               String                @unique
+  emailValidated      Boolean               @default(false)
+  password            String
+  isActive            Boolean               @default(true)
+  cityId              Int
+  city                City                  @relation(fields: [cityId], references: [id])
+  pqrs                PQR[]
+  tickets             Ticket[]
+  modules             Module[]
+  ticketStatusHistory TicketStatusHistory[]
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime?             @updatedAt
 }
 
 model PQR {
@@ -130,31 +130,40 @@ model Module {
   headquarterId Int
   headquarter   Headquarter @relation(fields: [headquarterId], references: [id])
   tickets       Ticket[]
-  userId        Int?         
-  user          User?        @relation(fields: [userId], references: [id])
+  userId        Int?
+  user          User?       @relation(fields: [userId], references: [id])
   createdAt     DateTime    @default(now())
   updatedAt     DateTime?   @updatedAt
 }
 
 model Ticket {
-  id            Int          @id @default(autoincrement())
-  code          String       
-  ticketType    TicketStatus @default(PENDING)
-  orderDate     DateTime     @default(now())
-  serviceData   DateTime?
-  priority      Boolean      @default(false)
-  headquarterId Int
-  userId        Int
-  moduleId      Int?
+  id                      Int                   @id @default(autoincrement())
+  ticketType              TicketStatus          @default(PENDING)
+  priority                Boolean
+  pendingTimeInSeconds    Int?
+  processingTimeInSeconds Int?
+  headquarterId           Int
+  userId                  Int
+  moduleId                Int?
+  headquarter             Headquarter           @relation(fields: [headquarterId], references: [id])
+  user                    User                  @relation(fields: [userId], references: [id])
+  module                  Module?               @relation(fields: [moduleId], references: [id])
+  ticketStatusHistory     TicketStatusHistory[]
+  ticketMedicines         TicketMedicine[]
+  rating                  Rating?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime?             @updatedAt
+}
 
-  headquarter Headquarter @relation(fields: [headquarterId], references: [id])
-  user        User        @relation(fields: [userId], references: [id])
-  module      Module?     @relation(fields: [moduleId], references: [id])
-
-  ticketMedicines TicketMedicine[]
-  rating          Rating?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime?        @updatedAt
+model TicketStatusHistory {
+  id        Int          @id @default(autoincrement())
+  ticketId  Int
+  oldStatus TicketStatus
+  newStatus TicketStatus
+  changedAt DateTime     @default(now())
+  userId    Int
+  user      User         @relation(fields: [userId], references: [id])
+  ticket    Ticket       @relation(fields: [ticketId], references: [id])
 }
 
 model Rating {

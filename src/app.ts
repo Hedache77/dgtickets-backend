@@ -3,6 +3,7 @@ import { envs } from "./config/envs";
 import { AppRoutes } from "./presentation/routes";
 import  Server  from "./presentation/server";
 import { WssService } from "./presentation/services/wss.service";
+import { prisma } from "./data/postgres";
 
 
 (() => {
@@ -10,8 +11,13 @@ import { WssService } from "./presentation/services/wss.service";
     main();
 })()
 
-function main() {
+async function setTimezone() {
+    await prisma.$queryRaw`SET TIMEZONE TO 'America/Bogota'`;
+  }
 
+async function main() {
+
+    await setTimezone();
     const server = new Server({
         port: envs.PORT,
     });

@@ -38,7 +38,7 @@ export class TicketsController_ {
   };
 
   public getTicketById = async (req: Request, res: Response) => {
-    const [error, getTicketByIdDto] = GetTicketByIdDto.create(req.params.code);
+    const [error, getTicketByIdDto] = GetTicketByIdDto.create(+req.params.id);
     if (error) {
       res.status(400).json({ error });
       return;
@@ -46,6 +46,32 @@ export class TicketsController_ {
 
     this.ticketService
       .getTicketById(getTicketByIdDto!)
+      .then((ticket) => res.status(201).json(ticket))
+      .catch((error) => this.handleError(error, res));
+  };
+
+
+  public getTicketByRow = async (req: Request, res: Response) => {
+    const [error, getTicketByIdDto] = GetTicketByIdDto.create(+req.params.id);
+    if (error) {
+      res.status(400).json({ error });
+      return;
+    }
+
+    this.ticketService
+      .getTicketByRow(getTicketByIdDto!)
+      .then((ticket) => res.status(201).json(ticket))
+      .catch((error) => this.handleError(error, res));
+  };
+  public getTicketPriority = async (req: Request, res: Response) => {
+    const [error, getTicketByIdDto] = GetTicketByIdDto.create(+req.params.id);
+    if (error) {
+      res.status(400).json({ error });
+      return;
+    }
+
+    this.ticketService
+      .getTicketPriority(getTicketByIdDto!)
       .then((ticket) => res.status(201).json(ticket))
       .catch((error) => this.handleError(error, res));
   };
@@ -64,7 +90,7 @@ export class TicketsController_ {
   };
 
   updateTicket = (req: Request, res: Response) => {
-    const [error, updateTicketDto] = UpdateTicketDto.create({code: req.params.code, ...req.body});
+    const [error, updateTicketDto] = UpdateTicketDto.create({id: req.params.id, ...req.body});
     if (error) {
       res.status(400).json({ error });
       return;
@@ -74,24 +100,5 @@ export class TicketsController_ {
       .updateTicket(updateTicketDto!)
       .then((ticket) => res.status(201).json(ticket))
       .catch((error) => this.handleError(error, res));
-  };
-
-  public getLastTicket = async (req: Request, res: Response) => {
-    const { headquarterId } = req.query;
-
-    this.ticketService
-      .getLastTicketNumber(headquarterId ? +headquarterId : undefined)
-      .then((ticket) => res.status(201).json(ticket))
-      .catch((error) => this.handleError(error, res));
-  };
-
-  public pendingTickets = async (req: Request, res: Response) => {
-    const pendingTickets = await this.ticketService.getPendingTickets();
-    res.status(201).json(pendingTickets);
-  };
-
-  public workingOn = async (req: Request, res: Response) => {
-    const workingOnTickets = await this.ticketService.getLastWorkingOnTickets();
-    res.status(201).json(workingOnTickets);
   };
 }

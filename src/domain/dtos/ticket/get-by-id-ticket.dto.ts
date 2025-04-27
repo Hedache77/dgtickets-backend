@@ -3,17 +3,19 @@
 export class GetTicketByIdDto {
 
     private constructor(
-        public readonly code: string,    
+        public readonly id: number,   
     ){}
 
 
-    static create( code: string ): [string?, GetTicketByIdDto?] {
+    static create( id: number ): [string?, GetTicketByIdDto?] {
 
 
-        if( !code ) return [ 'Missing code' ];
+        if( !id ) return [ 'Missing id' ];
+
+        if( isNaN(id) ) return [ `${id} is not a number`];
 
 
-        return [undefined, new GetTicketByIdDto(code)];
+        return [undefined, new GetTicketByIdDto(id)];
 
 
     }

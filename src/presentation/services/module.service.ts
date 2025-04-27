@@ -1,4 +1,5 @@
 import { prisma } from "../../data/postgres";
+import { formatDates } from "../../config/formatterDate";
 import {
   CreateModuleDto,
   CustomError,
@@ -6,7 +7,6 @@ import {
   PaginationDto,
   UpdateModuleDto,
 } from "../../domain";
-
 export class ModuleService {
   constructor() {}
 
@@ -151,7 +151,7 @@ export class ModuleService {
             : null,
         prev:
           page - 1 > 0 ? `/api/modules?page=${page - 1}&limit=${limit}` : null,
-        modules,
+        modules: formatDates(modules),
       };
     } catch (error) {
       throw CustomError.internalServer("Internal Server Error");
@@ -169,10 +169,12 @@ export class ModuleService {
       if (!module) throw CustomError.notFound("module not found");
 
       return {
-        module,
+        module: formatDates(module)
       };
     } catch (error) {
       throw CustomError.internalServer(`${error}`);
     }
   }
 }
+
+

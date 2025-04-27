@@ -15,12 +15,12 @@ export class HeadquarterRoutes {
     router.get("/:id", headquarterController.getHeadquarterById);
     router.post(
       "/",
-      [AuthMiddlewre.validateJWT],
+
       headquarterController.createHeadquarter
     );
     router.put(
       "/",
-      [AuthMiddlewre.validateJWT],
+
       headquarterController.updateHeadquarter
     );
 
