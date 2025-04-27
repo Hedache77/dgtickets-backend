@@ -107,6 +107,8 @@ model User {
   city           City      @relation(fields: [cityId], references: [id])
   pqrs           PQR[]
   tickets        Ticket[]
+  modules        Module[]  
+
   createdAt      DateTime  @default(now())
   updatedAt      DateTime? @updatedAt
 }
@@ -128,13 +130,15 @@ model Module {
   headquarterId Int
   headquarter   Headquarter @relation(fields: [headquarterId], references: [id])
   tickets       Ticket[]
+  userId        Int?         
+  user          User?        @relation(fields: [userId], references: [id])
   createdAt     DateTime    @default(now())
   updatedAt     DateTime?   @updatedAt
 }
 
 model Ticket {
   id            Int          @id @default(autoincrement())
-  code          String       @unique
+  code          String       
   ticketType    TicketStatus @default(PENDING)
   orderDate     DateTime     @default(now())
   serviceData   DateTime?

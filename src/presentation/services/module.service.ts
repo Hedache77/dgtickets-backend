@@ -15,13 +15,37 @@ export class ModuleService {
       const moduleExist = await prisma.module.findFirst({
         where: { name: createModuleDto.name },
       });
-
       if (moduleExist) throw CustomError.badRequest("Module already exist");
+      const headquarterExist = await prisma.headquarter.findFirst({
+        where: { id: +createModuleDto.headquarterId },
+      });
+      if (!headquarterExist) throw CustomError.badRequest("Headquarter not exist");
+
+      if(createModuleDto.userId) {
+        const usertExist = await prisma.user.findFirst({
+          where: { id: +createModuleDto.userId },
+        });
+        if (!usertExist) throw CustomError.badRequest("User not exist");
+      }
 
       const module = await prisma.module.create({
         data: {
           name: createModuleDto.name,
           headquarterId: +createModuleDto.headquarterId,
+          ...(createModuleDto.userId && { userId: +createModuleDto.userId }),
+        },
+        include: {
+          headquarter: {
+            select: { id: true, name: true },
+          },
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          }
         },
       });
 
@@ -53,6 +77,14 @@ export class ModuleService {
 
     if (existSameName) throw CustomError.badRequest("Module name already exist");
 
+
+    if(updateModuleDto.userId) {
+      const usertExist = await prisma.user.findFirst({
+        where: { id: +updateModuleDto.userId },
+      });
+      if (!usertExist) throw CustomError.badRequest("User not exist");
+    }
+
     try {
       let valActive = toBoolean(updateModuleDto.isActive.toString());
 
@@ -70,6 +102,20 @@ export class ModuleService {
               : moduleFind.name,
           isActive:
             moduleFind.isActive != valActive ? valActive : moduleFind.isActive,
+            ...(updateModuleDto.userId && { userId: +updateModuleDto.userId }),
+        },
+        include: {
+          headquarter: {
+            select: { id: true, name: true },
+          },
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          }
         },
       });
 
