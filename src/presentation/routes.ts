@@ -40,7 +40,6 @@ export class AppRoutes {
     router.use("/api/pqrs", [AuthMiddlewre.validateJWT], PQRRoutes.routes);
     router.use(
       "/api/modules",
-      [AuthMiddlewre.validateJWT],
       ModuleRoutes.routes
     );
     router.use(

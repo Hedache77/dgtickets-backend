@@ -175,6 +175,23 @@ export class ModuleService {
       throw CustomError.internalServer(`${error}`);
     }
   }
+  async getModuleByHeadquarter(getModuleByIdDto: GetModuleByIdDto) {
+    const { id } = getModuleByIdDto;
+
+    if (!id) throw CustomError.badRequest("id property is required");
+
+    try {
+      const module = await prisma.module.findFirst({ where: { headquarterId: +id } });
+
+      if (!module) throw CustomError.notFound("modules not found");
+
+      return {
+        module: formatDates(module)
+      };
+    } catch (error) {
+      throw CustomError.internalServer(`${error}`);
+    }
+  }
 }
 
 

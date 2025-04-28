@@ -78,4 +78,17 @@ export class ModuleController {
       .then((module) => res.status(201).json(module))
       .catch((error) => this.handleError(error, res));
   };
+
+  public getModuleByHeadquarter = async (req: Request, res: Response) => {
+    const [error, getModuleByIdDto] = GetModuleByIdDto.create(+req.params.id);
+    if (error) {
+      res.status(400).json({ error });
+      return;
+    }
+
+    this.moduleService
+      .getModuleByHeadquarter(getModuleByIdDto!)
+      .then((module) => res.status(201).json(module))
+      .catch((error) => this.handleError(error, res));
+  };
 }
