@@ -17,3 +17,20 @@ export interface Ticket_ {
   headquarterId: number;
   userId: number;
 }
+
+export interface TicketPositionInfo {
+  ticket: {
+    id: number;
+    ticketType: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELED' | 'EXPIRED';
+    priority: boolean;
+    pendingTimeInSeconds: number | null;
+    processingTimeInSeconds: number | null;
+    headquarterId: number;
+    userId: number;
+    moduleId: number | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+  position: number;
+  timeToAttend: number;
+}

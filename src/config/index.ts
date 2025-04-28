@@ -7,3 +7,4 @@ export * from './regular-exp';
 export * from './uuid.adapter';
 export * from './formatterDate';
 export * from './timeTickets';
+export * from './formatterTime';
