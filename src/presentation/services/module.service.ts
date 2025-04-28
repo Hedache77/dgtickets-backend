@@ -181,7 +181,19 @@ export class ModuleService {
     if (!id) throw CustomError.badRequest("id property is required");
 
     try {
-      const module = await prisma.module.findFirst({ where: { headquarterId: +id } });
+      const module = await prisma.module.findMany({ 
+        where: { 
+          headquarterId: +id 
+        },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+       });
 
       if (!module) throw CustomError.notFound("modules not found");
 
