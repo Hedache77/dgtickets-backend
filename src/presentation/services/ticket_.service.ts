@@ -42,20 +42,8 @@ export class TicketService_ {
         },
       });
 
-      const ticketCount = await prisma.ticket.count({
-        where: {
-          headquarterId: +createTicketDto.headquarterId,
-        },
-      });
-
-      const averagePendingTime = await prisma.ticket.aggregate({
-        where: {
-          headquarterId: +createTicketDto.headquarterId,
-        },
-        _avg: {
-          pendingTimeInSeconds: true,
-        },
-      });
+      const infoTicket = await this.calculatePositionTime({ id: ticket.id });
+      console.log('aaaa ', infoTicket);
 
       await this.sendEmailConfirmCreatedTicket({
         ticket: {
@@ -70,15 +58,15 @@ export class TicketService_ {
           createdAt: ticket.createdAt.toString(),
           updatedAt: ticket.updatedAt?.toString() || '',
         },
-        position: ticketCount,
-        timeToAttend: averagePendingTime._avg.pendingTimeInSeconds!,
+        position: infoTicket.position,
+        timeToAttend: infoTicket.estimatedTimeAtentionInSeconds,
       });
 
 
       return {
         ticket,
-        position: ticketCount,
-        timeToAttend: averagePendingTime._avg.pendingTimeInSeconds,
+        position: infoTicket.position,
+        timeToAttend: infoTicket.estimatedTimeAtentionInSeconds,
       };
     } catch (error) {
       throw CustomError.internalServer(`${error}`);
@@ -289,6 +277,14 @@ export class TicketService_ {
           createdAt: "asc",
         },
         take: 10,
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
       });
 
       const ticketsCountGeneral = await prisma.ticket.findMany({
@@ -355,6 +351,14 @@ export class TicketService_ {
           createdAt: "asc",
         },
         take: 10,
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
       });
 
       const ticketsCountGeneral = await prisma.ticket.findMany({
@@ -398,8 +402,8 @@ export class TicketService_ {
       return {
         tickets: ticketsRows,
         countPendingTickets: ticketCount,
-        averagePendingTimeToAttendInSecond,
-        averageProcessingTimeModuleInSecod,
+        averagePendingTimeToAttendInSecond: averagePendingTimeToAttendInSecond ? averagePendingTimeToAttendInSecond : ticketCount * 500,
+        averageProcessingTimeModuleInSecod: averageProcessingTimeModuleInSecod ? averageProcessingTimeModuleInSecod : 500,
       };
     } catch (error) {
       throw CustomError.internalServer(`${error}`);
@@ -456,6 +460,17 @@ export class TicketService_ {
         },
       });
 
+      const ticketsInQueuePrioritary = await prisma.ticket.findMany({
+        where: {
+          headquarterId: +findTicket.headquarterId,
+          ticketType: TicketStatus.PENDING,
+          priority: true,
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+      });
+
       const position = ticketsInQueue.findIndex(
         (ticket) => ticket.id === findTicket.id
       );
@@ -468,14 +483,40 @@ export class TicketService_ {
         return sum + (ticket.processingTimeInSeconds || 0);
       }, 0);
 
+      const totalProcessingTimePriority = ticketsInQueuePrioritary.reduce((sum, ticket) => {
+        return sum + (ticket.processingTimeInSeconds || 0);
+      }, 0);
+
       const averageProcessingTime =
         ticketsInQueue.length > 0
           ? totalProcessingTime / ticketsInQueue.length
           : 0;
+      const averageProcessingTimePriority =
+      ticketsInQueuePrioritary.length > 0
+          ? totalProcessingTimePriority / ticketsInQueuePrioritary.length
+          : 0;
 
-      const estimatedTimeAtentionInSeconds = Math.round(
+      let estimatedTimeAtentionInSeconds = Math.round(
         position * averageProcessingTime
       );
+      let estimatedTimeAtentionInSecondsPriority = Math.round(
+        position * averageProcessingTimePriority
+      );
+
+      const timePriority = 300
+      const timeNotPriority = 180
+
+      if(estimatedTimeAtentionInSeconds === 0 && findTicket.priority === true) {
+        estimatedTimeAtentionInSeconds = timePriority * (position + 1)
+      }
+
+      if(estimatedTimeAtentionInSeconds === 0 && findTicket.priority === false) {
+        estimatedTimeAtentionInSeconds = (timeNotPriority * (position + 1)) + (estimatedTimeAtentionInSecondsPriority ? estimatedTimeAtentionInSecondsPriority : timePriority * (ticketsInQueuePrioritary.length + 1))
+      } 
+
+      if (findTicket.priority === false && estimatedTimeAtentionInSeconds != 0) {
+        estimatedTimeAtentionInSeconds+= estimatedTimeAtentionInSecondsPriority ? estimatedTimeAtentionInSecondsPriority : timePriority * (ticketsInQueuePrioritary.length + 1)
+      }
 
       return {
         position: position + 1,
