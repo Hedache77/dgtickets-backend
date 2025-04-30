@@ -75,6 +75,19 @@ export class TicketsController_ {
       .catch((error) => this.handleError(error, res));
   };
 
+  public getTicketInProgressByHeadquarter = async (req: Request, res: Response) => {
+    const [error, getTicketByIdDto] = GetTicketByIdDto.create(+req.params.id);
+    if (error) {
+      res.status(400).json({ error });
+      return;
+    }
+
+    this.ticketService
+      .getTicketInProgressByHeadquarter(getTicketByIdDto!)
+      .then((ticket) => res.status(201).json(ticket))
+      .catch((error) => this.handleError(error, res));
+  };
+
   createTicket = (req: Request, res: Response) => {
     const [error, createTicketDto] = CreateTicketDto.create(req.body);
     if (error) {

@@ -409,6 +409,38 @@ export class TicketService_ {
       throw CustomError.internalServer(`${error}`);
     }
   }
+  async getTicketInProgressByHeadquarter(getTicketByIdDto: GetTicketByIdDto) {
+    const { id } = getTicketByIdDto;
+
+    if (!id) throw CustomError.badRequest("id property is required");
+
+    try {
+      const ticketsInProgress = await prisma.ticket.findMany({
+        where: {
+          headquarterId: +id,
+          ticketType: TicketStatus.IN_PROGRESS,
+          priority: true,
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      });
+
+      return {
+        tickets: ticketsInProgress
+      };
+    } catch (error) {
+      throw CustomError.internalServer(`${error}`);
+    }
+  }
 
   async getTicketById(getTicketByIdDto: GetTicketByIdDto) {
     const { id } = getTicketByIdDto;
