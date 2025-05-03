@@ -28,7 +28,7 @@ export class TicketRoutes_ {
     router.get("/row/:id", ticketController.getTicketByRow); // id de la sede para obtener la cola sin prioridad
     router.get("/priority/:id", ticketController.getTicketPriority); // id de la sede para obtener la cola con prioridad
     router.get("/position/:id", [AuthMiddlewre.validateJWT], ticketController.calculatePositionTime); // id de ticket para saber la posición y el tiempo de atención
-    router.get("/inprogress/:id", ticketController.getTicketInProgressByHeadquarter); // id de la sede para saber los tickets en progreso
+    router.get("/inprogress/:id", [AuthMiddlewre.validateJWT], ticketController.getTicketInProgressByHeadquarter); // id de la sede para saber los tickets en progreso
 
     return router;
   }
