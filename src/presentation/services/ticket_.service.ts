@@ -1,5 +1,11 @@
+import { startOfDay, endOfDay } from "date-fns";
 import { TicketStatus } from "@prisma/client";
-import { envs, formatEstimatedTime, getTimeTickets, UuidAdapter } from "../../config";
+import {
+  envs,
+  formatEstimatedTime,
+  getTimeTickets,
+  UuidAdapter,
+} from "../../config";
 import { prisma } from "../../data/postgres";
 import {
   CreateTicketDto,
@@ -12,9 +18,7 @@ import { TicketPositionInfo } from "../../domain/interfaces/ticket";
 import { EmailService } from "./email.service";
 
 export class TicketService_ {
-  constructor(
-    private readonly emailService: EmailService
-  ) {}
+  constructor(private readonly emailService: EmailService) {}
 
   async createTicket(createTicketDto: CreateTicketDto) {
     const headquarterFind = await prisma.headquarter.findFirst({
@@ -26,6 +30,27 @@ export class TicketService_ {
       where: { id: +createTicketDto.userId },
     });
     if (!userFind) throw CustomError.badRequest("User not exist");
+
+    const now = new Date();
+    const start = startOfDay(now);
+    const end = endOfDay(now);
+
+    const cancelledTicketsCount = await prisma.ticket.count({
+      where: {
+        userId: +createTicketDto.userId,
+        ticketType: TicketStatus.EXPIRED,
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      },
+    });
+
+    if (cancelledTicketsCount >= 3) {
+      throw CustomError.badRequest(
+        "The user already has 3 or more missing tickets today."
+      );
+    }
 
     try {
       function toBoolean(value: string): boolean {
@@ -43,7 +68,7 @@ export class TicketService_ {
       });
 
       const infoTicket = await this.calculatePositionTime({ id: ticket.id });
-      console.log('aaaa ', infoTicket);
+      console.log("aaaa ", infoTicket);
 
       await this.sendEmailConfirmCreatedTicket({
         ticket: {
@@ -56,12 +81,11 @@ export class TicketService_ {
           userId: ticket.userId,
           moduleId: ticket.moduleId,
           createdAt: ticket.createdAt.toString(),
-          updatedAt: ticket.updatedAt?.toString() || '',
+          updatedAt: ticket.updatedAt?.toString() || "",
         },
         position: infoTicket.position,
         timeToAttend: infoTicket.estimatedTimeAtentionInSeconds,
       });
-
 
       return {
         ticket,
@@ -402,8 +426,12 @@ export class TicketService_ {
       return {
         tickets: ticketsRows,
         countPendingTickets: ticketCount,
-        averagePendingTimeToAttendInSecond: averagePendingTimeToAttendInSecond ? averagePendingTimeToAttendInSecond : ticketCount * 500,
-        averageProcessingTimeModuleInSecod: averageProcessingTimeModuleInSecod ? averageProcessingTimeModuleInSecod : 500,
+        averagePendingTimeToAttendInSecond: averagePendingTimeToAttendInSecond
+          ? averagePendingTimeToAttendInSecond
+          : ticketCount * 500,
+        averageProcessingTimeModuleInSecod: averageProcessingTimeModuleInSecod
+          ? averageProcessingTimeModuleInSecod
+          : 500,
       };
     } catch (error) {
       throw CustomError.internalServer(`${error}`);
@@ -434,7 +462,7 @@ export class TicketService_ {
       });
 
       return {
-        tickets: ticketsInProgress
+        tickets: ticketsInProgress,
       };
     } catch (error) {
       throw CustomError.internalServer(`${error}`);
@@ -514,16 +542,19 @@ export class TicketService_ {
         return sum + (ticket.processingTimeInSeconds || 0);
       }, 0);
 
-      const totalProcessingTimePriority = ticketsInQueuePrioritary.reduce((sum, ticket) => {
-        return sum + (ticket.processingTimeInSeconds || 0);
-      }, 0);
+      const totalProcessingTimePriority = ticketsInQueuePrioritary.reduce(
+        (sum, ticket) => {
+          return sum + (ticket.processingTimeInSeconds || 0);
+        },
+        0
+      );
 
       const averageProcessingTime =
         ticketsInQueue.length > 0
           ? totalProcessingTime / ticketsInQueue.length
           : 0;
       const averageProcessingTimePriority =
-      ticketsInQueuePrioritary.length > 0
+        ticketsInQueuePrioritary.length > 0
           ? totalProcessingTimePriority / ticketsInQueuePrioritary.length
           : 0;
 
@@ -534,19 +565,34 @@ export class TicketService_ {
         position * averageProcessingTimePriority
       );
 
-      const timePriority = 300
-      const timeNotPriority = 180
+      const timePriority = 300;
+      const timeNotPriority = 180;
 
-      if(estimatedTimeAtentionInSeconds === 0 && findTicket.priority === true) {
-        estimatedTimeAtentionInSeconds = timePriority * (position + 1)
+      if (
+        estimatedTimeAtentionInSeconds === 0 &&
+        findTicket.priority === true
+      ) {
+        estimatedTimeAtentionInSeconds = timePriority * (position + 1);
       }
 
-      if(estimatedTimeAtentionInSeconds === 0 && findTicket.priority === false) {
-        estimatedTimeAtentionInSeconds = (timeNotPriority * (position + 1)) + (estimatedTimeAtentionInSecondsPriority ? estimatedTimeAtentionInSecondsPriority : timePriority * (ticketsInQueuePrioritary.length + 1))
-      } 
+      if (
+        estimatedTimeAtentionInSeconds === 0 &&
+        findTicket.priority === false
+      ) {
+        estimatedTimeAtentionInSeconds =
+          timeNotPriority * (position + 1) +
+          (estimatedTimeAtentionInSecondsPriority
+            ? estimatedTimeAtentionInSecondsPriority
+            : timePriority * (ticketsInQueuePrioritary.length + 1));
+      }
 
-      if (findTicket.priority === false && estimatedTimeAtentionInSeconds != 0) {
-        estimatedTimeAtentionInSeconds+= estimatedTimeAtentionInSecondsPriority ? estimatedTimeAtentionInSecondsPriority : timePriority * (ticketsInQueuePrioritary.length + 1)
+      if (
+        findTicket.priority === false &&
+        estimatedTimeAtentionInSeconds != 0
+      ) {
+        estimatedTimeAtentionInSeconds += estimatedTimeAtentionInSecondsPriority
+          ? estimatedTimeAtentionInSecondsPriority
+          : timePriority * (ticketsInQueuePrioritary.length + 1);
       }
 
       return {
@@ -558,41 +604,40 @@ export class TicketService_ {
     }
   }
 
+  private sendEmailConfirmCreatedTicket = async (
+    ticket: TicketPositionInfo
+  ) => {
+    const nameHeadquarter = await prisma.headquarter.findFirst({
+      where: { id: ticket.ticket.headquarterId },
+      select: { name: true },
+    });
 
-      private sendEmailConfirmCreatedTicket = async( ticket: TicketPositionInfo  ) => {
-  
-        const nameHeadquarter = await prisma.headquarter.findFirst({
-          where: { id: ticket.ticket.headquarterId },
-          select: { name: true }
-        });
+    const emailUser = await prisma.user.findFirst({
+      where: { id: ticket.ticket.userId },
+      select: { email: true },
+    });
 
-        const emailUser = await prisma.user.findFirst({ 
-          where: { id: ticket.ticket.userId },
-          select: { email: true }
-        });
-  
-          const link = `${ envs.WEBSERVICE_URL }`;
-          const html = `
+    const link = `${envs.WEBSERVICE_URL}`;
+    const html = `
               <h1>Su ticket se ha creado correctamente</h1>
               <p>A continuación encontrará información de su ticket: </p>
-              <p>Sede: ${ nameHeadquarter }</p>
-              <p>Su posición es; ${ ticket.position }</p>
-              <p>Tiempo estimado de atención ${ formatEstimatedTime(ticket.timeToAttend) }</p>
-              <a href="${ link }">Para realizar seguimiento a su ticket de click aquí</a>
+              <p>Sede: ${nameHeadquarter}</p>
+              <p>Su posición es; ${ticket.position}</p>
+              <p>Tiempo estimado de atención ${formatEstimatedTime(
+                ticket.timeToAttend
+              )}</p>
+              <a href="${link}">Para realizar seguimiento a su ticket de click aquí</a>
           `;
-  
-          const options = {
-              to: emailUser?.email!,
-              subject: 'Su ticket se ha creado satisfactoriamente',
-              htmlBody: html
-          }
-  
-          const isSent = await this.emailService.sendEmail(options);
-          if( !isSent ) throw CustomError.internalServer('Error sending email');
-  
-          return true;
-      }
 
+    const options = {
+      to: emailUser?.email!,
+      subject: "Su ticket se ha creado satisfactoriamente",
+      htmlBody: html,
+    };
 
+    const isSent = await this.emailService.sendEmail(options);
+    if (!isSent) throw CustomError.internalServer("Error sending email");
 
+    return true;
+  };
 }
