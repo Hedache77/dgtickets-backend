@@ -419,7 +419,6 @@ export class TicketService_ {
         where: {
           headquarterId: +id,
           ticketType: TicketStatus.IN_PROGRESS,
-          priority: true,
         },
         orderBy: {
           createdAt: "asc",
