@@ -168,11 +168,11 @@ export class HeadquarterService {
     
     if (!headquarterFind) throw CustomError.badRequest("Headquarter not exist");
 
-    const existSameName = await prisma.headquarter.findFirst({
-      where: { name: updateHeadquarterDto.name },
-    });
+    // const existSameName = await prisma.headquarter.findFirst({
+    //   where: { name: updateHeadquarterDto.name },
+    // });
 
-    if (existSameName) throw CustomError.badRequest("Headquarter name already exist");
+    // if (existSameName) throw CustomError.badRequest("Headquarter name already exist");
 
     let medicines = updateHeadquarterDto.medicines;
 
@@ -226,10 +226,10 @@ export class HeadquarterService {
         where: { id: headquarterFind.id },
 
         data: {
-          // name:
-          //   headquarterFind.name != updateHeadquarterDto.name
-          //     ? updateHeadquarterDto.name
-          //     : headquarterFind.name,
+          name:
+            headquarterFind.name != updateHeadquarterDto.name
+              ? updateHeadquarterDto.name
+              : headquarterFind.name,
           address:
             headquarterFind.address != updateHeadquarterDto.address
               ? updateHeadquarterDto.address
