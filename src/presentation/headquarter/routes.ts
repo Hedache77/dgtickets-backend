@@ -19,7 +19,7 @@ export class HeadquarterRoutes {
       headquarterController.createHeadquarter
     );
     router.put(
-      "/",
+      "/:id",
 
       headquarterController.updateHeadquarter
     );

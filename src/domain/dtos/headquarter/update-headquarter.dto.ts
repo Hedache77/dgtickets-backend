@@ -14,12 +14,12 @@ export class UpdateHeadquarterDto {
     const { id, name, address, phoneNumber, isActive, medicines } = object;
 
     if (!id) return ["Missing id"];
-    if (!name) return ["Missing name"];
-    if (!address) return ["Missing address"];
-    if (!phoneNumber) return ["Missing phoneNumber"];
-    if (!isActive) return ["Missing isActive"];
-    if (typeof !!isActive !== "boolean")
-      return ["isActive is not a valid type"];
+    // if (!name) return ["Missing name"];
+    // if (!address) return ["Missing address"];
+    // if (!phoneNumber) return ["Missing phoneNumber"];
+    // if (!isActive) return ["Missing isActive"];
+    // if (typeof !!isActive !== "boolean")
+    //   return ["isActive is not a valid type"];
 
     return [
       undefined,
