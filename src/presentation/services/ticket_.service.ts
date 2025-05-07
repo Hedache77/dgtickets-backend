@@ -123,7 +123,7 @@ export class TicketService_ {
       },
     });
 
-    if (existingInProgress) {
+    if (existingInProgress && id !== existingInProgress.id) {
       throw CustomError.badRequest("The module already has a ticket in progress and cannot handle more than one at a time.");
     }
 
