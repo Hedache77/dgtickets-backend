@@ -143,7 +143,7 @@ export class TicketService_ {
       for (const med of filtered) {
         const medicineStock = await prisma.headquarterToMedicine.findFirst({
           where: {
-            headquarterId: +module!,
+            headquarterId: +module!.headquarterId,
             medicineId: +med.medicineId,
           },
         });
