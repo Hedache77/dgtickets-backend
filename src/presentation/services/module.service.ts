@@ -7,6 +7,7 @@ import {
   PaginationDto,
   UpdateModuleDto,
 } from "../../domain";
+import { TicketStatus } from "@prisma/client";
 export class ModuleService {
   constructor() {}
 
@@ -181,19 +182,31 @@ export class ModuleService {
     if (!id) throw CustomError.badRequest("id property is required");
 
     try {
-      const module = await prisma.module.findMany({ 
-        where: { 
-          headquarterId: +id 
+
+      const module = await prisma.module.findMany({
+        where: {
+          headquarterId: +id,
         },
         include: {
-          user: {
+          tickets: {
+            where: {
+              ticketType: TicketStatus.IN_PROGRESS,
+            },
+            take: 1, // Trae solo uno (asumiendo un ticket en progreso por módulo)
             select: {
-              firstName: true,
-              lastName: true,
+              id: true,
+              ticketType: true,
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
             },
           },
         },
-       });
+      });
+      
 
       if (!module) throw CustomError.notFound("modules not found");
 

@@ -37,6 +37,25 @@ export class TicketsController_ {
       .catch((error) => this.handleError(error, res));
   };
 
+  public getTicketsByUser = async (req: Request, res: Response) => {
+    const [error1, getTicketByIdDto] = GetTicketByIdDto.create(+req.params.id);
+    const { page = 1, limit = 10 } = req.query;
+    const [error, paginationDto] = PaginationDto.create(+page, +limit);
+    if (error) {
+      res.status(400).json({ error });
+      return;
+    }
+    if (error1) {
+      res.status(400).json({ error });
+      return;
+    }
+
+    this.ticketService
+      .getTicketsByUser(paginationDto!, getTicketByIdDto!)
+      .then((tickets) => res.json(tickets))
+      .catch((error) => this.handleError(error, res));
+  };
+
   public getTicketById = async (req: Request, res: Response) => {
     const [error, getTicketByIdDto] = GetTicketByIdDto.create(+req.params.id);
     if (error) {

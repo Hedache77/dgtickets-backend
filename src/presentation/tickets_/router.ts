@@ -23,6 +23,7 @@ export class TicketRoutes_ {
 
     router.get("/", ticketController.getTickets); // traer todos los tickets creados en todas las sedes
     router.get("/:id", [AuthMiddlewre.validateJWT], ticketController.getTicketById); // traer información del ticket
+    router.get("/user/:id", [AuthMiddlewre.validateJWT], ticketController.getTicketsByUser); // traer información de los tickets por id de usuario
     router.post("/", [AuthMiddlewre.validateJWT], ticketController.createTicket); // crear ticket
     router.put("/:id", [AuthMiddlewre.validateJWT], ticketController.updateTicket); // id de ticket para actualizar
     router.get("/row/:id", ticketController.getTicketByRow); // id de la sede para obtener la cola sin prioridad

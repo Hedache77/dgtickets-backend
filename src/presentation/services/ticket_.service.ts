@@ -116,6 +116,17 @@ export class TicketService_ {
 
     if (!moduleExist) throw CustomError.badRequest("Module not exist");
 
+    const existingInProgress = await prisma.ticket.findFirst({
+      where: {
+        moduleId: +updateTicketDto.moduleId,
+        ticketType: TicketStatus.IN_PROGRESS,
+      },
+    });
+
+    if (existingInProgress) {
+      throw CustomError.badRequest("The module already has a ticket in progress and cannot handle more than one at a time.");
+    }
+
     let medicines = updateTicketDto.medicines;
 
     if (typeof medicines === "string") {
@@ -263,6 +274,54 @@ export class TicketService_ {
         prisma.ticket.findMany({
           skip: (page - 1) * limit,
           take: limit,
+          include: {
+            rating: true,
+          },
+        }),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        page: page,
+        limit: limit,
+        total: total,
+        next:
+          page < totalPages
+            ? `/api/tickets?page=${page + 1}&limit=${limit}`
+            : null,
+        prev:
+          page - 1 > 0 ? `/api/tickets?page=${page - 1}&limit=${limit}` : null,
+        tickets,
+      };
+    } catch (error) {
+      throw CustomError.internalServer("Internal Server Error");
+    }
+  }
+
+
+  async getTicketsByUser(paginationDto: PaginationDto, getTicketByIdDto: GetTicketByIdDto) {
+    const { id } = getTicketByIdDto;
+
+    if (!id) throw CustomError.badRequest("id property is required");
+    const { page, limit } = paginationDto;
+
+    try {
+      const [total, tickets] = await Promise.all([
+        prisma.ticket.count({
+          where: {
+            userId: +id,
+          },
+        }),
+        prisma.ticket.findMany({
+          skip: (page - 1) * limit,
+          take: limit,
+          where: {
+            userId: +id,
+          },
+          include: {
+            rating: true,
+          },
         }),
       ]);
 
@@ -458,6 +517,16 @@ export class TicketService_ {
               lastName: true,
             },
           },
+          ticketMedicines: {
+            select: {
+              quantity: true,
+              medicine: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -483,6 +552,7 @@ export class TicketService_ {
               medicine: true,
             },
           },
+          rating: true,
         },
       });
 
