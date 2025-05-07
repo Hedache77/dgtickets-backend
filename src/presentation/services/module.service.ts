@@ -188,6 +188,12 @@ export class ModuleService {
           headquarterId: +id,
         },
         include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
           tickets: {
             where: {
               ticketType: TicketStatus.IN_PROGRESS,
