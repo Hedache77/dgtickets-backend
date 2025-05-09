@@ -192,7 +192,7 @@ export class ModuleService {
             where: {
               ticketType: TicketStatus.IN_PROGRESS,
             },
-            take: 1, // Trae solo uno (asumiendo un ticket en progreso por módulo)
+            take: 1,
             select: {
               id: true,
               ticketType: true,

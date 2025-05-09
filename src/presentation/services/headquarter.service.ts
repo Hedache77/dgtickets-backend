@@ -100,15 +100,15 @@ export class HeadquarterService {
     if (!id) throw CustomError.badRequest(`${id} is not a number`);
 
     try {
-      const headquarter = await prisma.headquarter.findFirst({ 
+      const headquarter = await prisma.headquarter.findFirst({
         where: { id },
         include: {
           headquarterMedicines: {
             include: {
-              medicine: true
-            }
-          }
-        }
+              medicine: true,
+            },
+          },
+        },
       });
 
       if (!headquarter) throw CustomError.notFound("Headquarter not found");
@@ -155,7 +155,6 @@ export class HeadquarterService {
   }
 
   async updateHeadquarter(updateHeadquarterDto: UpdateHeadquarterDto) {
-
     const id = +updateHeadquarterDto.id;
 
     if (!id) throw CustomError.badRequest("Id property is required");
@@ -165,7 +164,7 @@ export class HeadquarterService {
     const headquarterFind = await prisma.headquarter.findFirst({
       where: { id },
     });
-    
+
     if (!headquarterFind) throw CustomError.badRequest("Headquarter not exist");
 
     // const existSameName = await prisma.headquarter.findFirst({
@@ -196,6 +195,37 @@ export class HeadquarterService {
           where: { id: +med.medicineId },
         });
 
+        const headquarterAndMedicine =
+          await prisma.headquarterToMedicine.findFirst({
+            where: {
+              medicineId: +med.medicineId,
+              headquarterId: +headquarterFind.id,
+            },
+          });
+
+        if (!headquarterAndMedicine) {
+          await prisma.headquarterToMedicine.createMany({
+            data: filtered.map((med) => ({
+              headquarterId: headquarterFind.id,
+              medicineId: med.medicineId,
+              quantity: med.quantity,
+            })),
+            skipDuplicates: true,
+          });
+        } else {
+          await prisma.headquarterToMedicine.update({
+            where: {
+              headquarterId_medicineId: {
+                headquarterId: headquarterFind.id,
+                medicineId: med.medicineId,
+              },
+            },
+            data: {
+              quantity: med.quantity + headquarterAndMedicine.quantity,
+            },
+          });
+        }
+
         if (!medicineStock) throw CustomError.badRequest("Medicine not exist");
 
         if (med.quantity > medicineStock.quantity) {
@@ -205,15 +235,13 @@ export class HeadquarterService {
         await prisma.medicine_Stock.update({
           where: { id: +med.medicineId },
           data: {
-            quantity: medicineStock.quantity - +med.quantity,
+            quantity: +medicineStock.quantity - +med.quantity,
           },
         });
       }
     } catch (error) {
       throw CustomError.internalServer(`${error}`);
     }
-
-
 
     try {
       function toBoolean(value: string): boolean {
@@ -245,16 +273,16 @@ export class HeadquarterService {
         },
       });
 
-      if (filtered.length) {
-        await prisma.headquarterToMedicine.createMany({
-          data: filtered.map((med) => ({
-            headquarterId: headquarter.id,
-            medicineId: med.medicineId,
-            quantity: med.quantity,
-          })),
-          skipDuplicates: true,
-        });
-      }
+      // if (filtered.length) {
+      //   await prisma.headquarterToMedicine.createMany({
+      //     data: filtered.map((med) => ({
+      //       headquarterId: headquarter.id,
+      //       medicineId: med.medicineId,
+      //       quantity: med.quantity,
+      //     })),
+      //     skipDuplicates: true,
+      //   });
+      // }
 
       return {
         headquarter,

@@ -68,7 +68,7 @@ export class MedicineStockController {
 
   updateMedicineStock = (req: Request, res: Response) => {
     const [error, updateMedicineStockDto] = UpdateMedicineStockDto.create(
-      req.body
+      {id: req.params.id, ...req.body}
     );
     if (error) {
       res.status(400).json({ error });
