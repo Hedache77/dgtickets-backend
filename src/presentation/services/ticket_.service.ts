@@ -16,9 +16,52 @@ import {
 } from "../../domain";
 import { TicketPositionInfo } from "../../domain/interfaces/ticket";
 import { EmailService } from "./email.service";
+import { WssService } from "./wss.service";
+import { ModuleService } from "./module.service";
 
 export class TicketService_ {
-  constructor(private readonly emailService: EmailService) {}
+  constructor(
+    private readonly emailService: EmailService,
+    private readonly wssService = WssService.instance,
+    private readonly moduleService: ModuleService
+  ) {}
+  async onTicketChanged(headquarterId: number, ticketId?: number) {
+    if (ticketId) {
+      const ticketById = await this.getTicketById({
+        id: ticketId,
+      });
+      const positionInfo = await this.calculatePositionTime({
+        id: ticketId,
+      });
+
+      this.wssService.sendMessagge("on-ticket-by-id", ticketById);
+      this.wssService.sendMessagge("on-position-by-id", positionInfo);
+    }
+
+    const pendingNormalTickets = await this.getTicketByRow({
+      id: headquarterId,
+    });
+    const pendingPriorityTickets = await this.getTicketPriority({
+      id: headquarterId,
+    });
+    const inProgressTickets = await this.getTicketInProgressByHeadquarter({
+      id: headquarterId,
+    });
+    const modules = await this.moduleService.getModuleByHeadquarter({
+      id: headquarterId,
+    });
+
+    this.wssService.sendMessagge(
+      "on-pending-normal-tickets",
+      pendingNormalTickets
+    );
+    this.wssService.sendMessagge(
+      "on-pending-priority-tickets",
+      pendingPriorityTickets
+    );
+    this.wssService.sendMessagge("on-in-progress-tickets", inProgressTickets);
+    this.wssService.sendMessagge("on-modules", modules);
+  }
 
   async createTicket(createTicketDto: CreateTicketDto) {
     const headquarterFind = await prisma.headquarter.findFirst({
@@ -69,7 +112,6 @@ export class TicketService_ {
 
       const infoTicket = await this.calculatePositionTime({ id: ticket.id });
       console.log("aaaa ", infoTicket);
-
       await this.sendEmailConfirmCreatedTicket({
         ticket: {
           id: ticket.id,
@@ -86,6 +128,8 @@ export class TicketService_ {
         position: infoTicket.position,
         timeToAttend: infoTicket.estimatedTimeAtentionInSeconds,
       });
+
+      await this.onTicketChanged(+createTicketDto.headquarterId, +ticket!.id);
 
       return {
         ticket,
@@ -124,7 +168,9 @@ export class TicketService_ {
     });
 
     if (existingInProgress && id !== existingInProgress.id) {
-      throw CustomError.badRequest("The module already has a ticket in progress and cannot handle more than one at a time.");
+      throw CustomError.badRequest(
+        "The module already has a ticket in progress and cannot handle more than one at a time."
+      );
     }
 
     let medicines = updateTicketDto.medicines;
@@ -257,6 +303,8 @@ export class TicketService_ {
         });
       }
 
+      await this.onTicketChanged(+ticket!.headquarterId, +ticket!.id);
+
       return {
         ticket,
       };
@@ -299,8 +347,10 @@ export class TicketService_ {
     }
   }
 
-
-  async getTicketsByUser(paginationDto: PaginationDto, getTicketByIdDto: GetTicketByIdDto) {
+  async getTicketsByUser(
+    paginationDto: PaginationDto,
+    getTicketByIdDto: GetTicketByIdDto
+  ) {
     const { id } = getTicketByIdDto;
 
     if (!id) throw CustomError.badRequest("id property is required");
@@ -604,9 +654,9 @@ export class TicketService_ {
         (ticket) => ticket.id === findTicket.id
       );
 
-      if (position === -1) {
-        throw new Error("Ticket not found in queue");
-      }
+      // if (position === -1) {
+      //   throw new Error("Ticket not found in queue");
+      // }
 
       const totalProcessingTime = ticketsInQueue.reduce((sum, ticket) => {
         return sum + (ticket.processingTimeInSeconds || 0);
