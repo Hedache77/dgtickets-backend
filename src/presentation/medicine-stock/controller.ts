@@ -23,7 +23,7 @@ export class MedicineStockController {
   };
 
   public getMedicineStocks = async (req: Request, res: Response) => {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, search } = req.query;
     const [error, paginationDto] = PaginationDto.create(+page, +limit);
     if (error) {
       res.status(400).json({ error });
@@ -31,7 +31,7 @@ export class MedicineStockController {
     }
 
     this.medicineStockService
-      .getMedicineStocks(paginationDto!)
+      .getMedicineStocks(paginationDto!, search?.toString())
       .then((medicineStocks) => res.json(medicineStocks))
       .catch((error) => this.handleError(error, res));
   };

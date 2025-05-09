@@ -120,17 +120,26 @@ export class MedicineStockService {
     }
   }
 
-  async getMedicineStocks(paginationDto: PaginationDto) {
+  async getMedicineStocks(paginationDto: PaginationDto, search?: string) {
     const { page, limit } = paginationDto;
+      const where = search
+    ? {
+        name: {
+          contains: search,
+          mode: 'insensitive' as const
+        },
+      }
+    : {};
 
     try {
-      const [total, medicineStocks] = await Promise.all([
-        prisma.medicine_Stock.count(),
-        prisma.medicine_Stock.findMany({
-          skip: (page - 1) * limit,
-          take: limit,
-        }),
-      ]);
+    const [total, medicineStocks] = await Promise.all([
+      prisma.medicine_Stock.count({ where }),
+      prisma.medicine_Stock.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
 
       const totalPages = Math.ceil(total / limit);
 
