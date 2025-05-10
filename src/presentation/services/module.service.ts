@@ -73,7 +73,7 @@ export class ModuleService {
     if (!moduleFind) throw CustomError.badRequest("Module not exist");
 
     const existSameName = await prisma.module.findFirst({
-      where: { name: updateModuleDto.name },
+      where: { name: moduleFind.name },
     });
 
     if (existSameName) throw CustomError.badRequest("Module name already exist");
