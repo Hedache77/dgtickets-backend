@@ -24,7 +24,7 @@ export class UsersController {
   };
 
   public getUsers = async (req: Request, res: Response) => {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, search } = req.query;
     const [error, paginationDto] = PaginationDto.create(+page, +limit);
     if (error) {
       res.status(400).json({ error });
@@ -32,7 +32,7 @@ export class UsersController {
     }
 
     this.userService
-      .getUsers(paginationDto!)
+      .getUsers(paginationDto!, search as string | undefined)
       .then((users) => res.json(users))
       .catch((error) => this.handleError(error, res));
   };
@@ -65,10 +65,12 @@ export class UsersController {
 
   updateUser = (req: Request, res: Response) => {
     const [error, updateUserDto] = UpdateUserDto.create({id: +req.params.id, ...req.body});
+    console.log('aaaaa ', updateUserDto);
     if (error) {
       res.status(400).json({ error });
       return;
     }
+
 
     this.userService
       .updateUser(updateUserDto!)

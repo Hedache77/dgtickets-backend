@@ -1,3 +1,4 @@
+import { Role } from "@prisma/client";
 import { bcryptAdapter } from "../../config";
 import { prisma } from "../../data/postgres";
 import {
@@ -62,15 +63,20 @@ export class UserService {
     }
   }
 
-  async getUsers(paginationDto: PaginationDto) {
+  async getUsers(paginationDto: PaginationDto, searchUserType?: string) {
     const { page, limit } = paginationDto;
+
+    const where: any = {
+      userType: searchUserType as Role,
+    };
 
     try {
       const [total, users] = await Promise.all([
-        prisma.user.count(),
+        prisma.user.count({ where }),
         prisma.user.findMany({
           skip: (page - 1) * limit,
           take: limit,
+          where,
         }),
       ]);
 
@@ -94,7 +100,6 @@ export class UserService {
   }
 
   async updateUser(updateUserDto: UpdateUserDto) {
-
     const id = +updateUserDto.id;
 
     if (!id) throw CustomError.badRequest("Id property is required");
@@ -104,48 +109,53 @@ export class UserService {
     const userFind = await prisma.user.findFirst({
       where: { id },
     });
-    
+
     if (!userFind) throw CustomError.badRequest("User not exist");
 
-    const emailFind = await prisma.user.findFirst({
-      where: { email: updateUserDto.email },
-    });
-    
-    if (emailFind) throw CustomError.badRequest("Email already exist");
+    // Construimos el objeto de datos a actualizar dinámicamente
+    const dataToUpdate: any = {};
 
+    if (
+      updateUserDto.firstName &&
+      updateUserDto.firstName !== userFind.firstName
+    ) {
+      dataToUpdate.firstName = updateUserDto.firstName;
+    }
 
+    if (
+      updateUserDto.lastName &&
+      updateUserDto.lastName !== userFind.lastName
+    ) {
+      dataToUpdate.lastName = updateUserDto.lastName;
+    }
 
+    if (updateUserDto.photo && updateUserDto.photo !== userFind.photo) {
+      dataToUpdate.photo = updateUserDto.photo;
+    }
 
+    if (
+      updateUserDto.userType &&
+      updateUserDto.userType !== userFind.userType
+    ) {
+      dataToUpdate.userType = updateUserDto.userType;
+    }
+
+    if (
+      updateUserDto.isUpdatePassword &&
+      updateUserDto.password &&
+      updateUserDto.password !== userFind.password
+    ) {
+      dataToUpdate.password = updateUserDto.password;
+    }
 
     try {
-      const user = await prisma.user.update({
-        where: { id: userFind.id },
-        data: {
-          firstName:
-            userFind.firstName != updateUserDto.firstName
-              ? updateUserDto.firstName
-              : userFind.firstName,
-          lastName:
-            userFind.lastName != updateUserDto.lastName
-              ? updateUserDto.lastName
-              : userFind.lastName,
-          password:
-            userFind.password != updateUserDto.password
-              ? updateUserDto.password
-              : userFind.password,
-          photo:
-            userFind.photo != updateUserDto.photo
-              ? updateUserDto.photo
-              : userFind.photo,
-          userType:
-            userFind.userType != updateUserDto.userType
-              ? updateUserDto.userType
-              : userFind.userType,
-        },
+      const updatedUser = await prisma.user.update({
+        where: { id },
+        data: dataToUpdate,
       });
 
       return {
-        user,
+        updatedUser,
       };
     } catch (error) {
       throw CustomError.internalServer(`${error}`);
