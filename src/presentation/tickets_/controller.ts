@@ -39,7 +39,7 @@ export class TicketsController_ {
 
   public getTicketsByUser = async (req: Request, res: Response) => {
     const [error1, getTicketByIdDto] = GetTicketByIdDto.create(+req.params.id);
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, search } = req.query;
     const [error, paginationDto] = PaginationDto.create(+page, +limit);
     if (error) {
       res.status(400).json({ error });
@@ -51,7 +51,7 @@ export class TicketsController_ {
     }
 
     this.ticketService
-      .getTicketsByUser(paginationDto!, getTicketByIdDto!)
+      .getTicketsByUser(paginationDto!, getTicketByIdDto!, search as string | undefined)
       .then((tickets) => res.json(tickets))
       .catch((error) => this.handleError(error, res));
   };

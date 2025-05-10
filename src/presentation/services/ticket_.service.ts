@@ -349,31 +349,35 @@ export class TicketService_ {
 
   async getTicketsByUser(
     paginationDto: PaginationDto,
-    getTicketByIdDto: GetTicketByIdDto
+    getTicketByIdDto: GetTicketByIdDto,
+    searchTicketType?: string
   ) {
     const { id } = getTicketByIdDto;
 
     if (!id) throw CustomError.badRequest("id property is required");
     const { page, limit } = paginationDto;
 
+    const where: any = {
+      userId: +id,
+    };
+
+    if (searchTicketType) {
+      where.ticketType = searchTicketType as any;
+    }
+
+
     try {
-      const [total, tickets] = await Promise.all([
-        prisma.ticket.count({
-          where: {
-            userId: +id,
-          },
-        }),
-        prisma.ticket.findMany({
-          skip: (page - 1) * limit,
-          take: limit,
-          where: {
-            userId: +id,
-          },
-          include: {
-            rating: true,
-          },
-        }),
-      ]);
+    const [total, tickets] = await Promise.all([
+      prisma.ticket.count({ where }),
+      prisma.ticket.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        where,
+        include: {
+          rating: true,
+        },
+      }),
+    ]);
 
       const totalPages = Math.ceil(total / limit);
 

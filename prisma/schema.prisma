@@ -27,6 +27,12 @@ enum TicketStatus {
   EXPIRED
 }
 
+enum PQRStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
 model Country {
   id        Int       @id @default(autoincrement())
   name      String    @unique
@@ -114,13 +120,15 @@ model User {
 }
 
 model PQR {
-  id          Int       @id @default(autoincrement())
-  code        String
-  description String
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime? @updatedAt
+  id           Int       @id @default(autoincrement())
+  pqrType      PQRStatus @default(PENDING)
+  description  String
+  answer       String?
+  answerByUser Int?
+  userId       Int
+  user         User      @relation(fields: [userId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
 }
 
 model Module {

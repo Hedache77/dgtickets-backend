@@ -1,25 +1,21 @@
+import { PQRStatus } from "@prisma/client";
 
 export class UpdatePQRDto {
+  private constructor(
+    public readonly id: number,
+    public readonly pqrType: PQRStatus,
+    public readonly answer: string,
+    public readonly answerByUser: number
+  ) {}
 
-    private constructor(
-        public readonly id: number,
-        public readonly code: string,
-        public readonly description: string,
-    ){}
+  static create(object: { [key: string]: any }): [string?, UpdatePQRDto?] {
+    const { id, pqrType, answer, answerByUser } = object;
 
+    if (!id) return ["Missing id"];
+    if (!answer) return ["Missing answer"];
+    if (!answerByUser) return ["Missing answerByUser"];
+    if (isNaN(answerByUser)) return [`answerByUser is not a valid type`];
 
-    static create( object: { [key: string]: any } ): [string?, UpdatePQRDto?] {
-
-        const { id, code, description } = object;
-
-        if( !id ) return [ 'Missing id' ];
-        if( !code ) return [ 'Missing code' ];
-        if( !description ) return [ 'Missing description' ];
-
-
-        return [undefined, new UpdatePQRDto(id, code, description)];
-
-
-    }
-
+    return [undefined, new UpdatePQRDto(id, pqrType, answer, answerByUser)];
+  }
 }

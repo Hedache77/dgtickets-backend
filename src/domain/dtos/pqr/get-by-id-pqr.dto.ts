@@ -3,17 +3,17 @@
 export class GetPQRByIdDto {
 
     private constructor(
-        public readonly code: string,    
+        public readonly id: number,    
     ){}
 
 
-    static create( code: string ): [string?, GetPQRByIdDto?] {
+    static create( id: number ): [string?, GetPQRByIdDto?] {
 
 
-        if( !code ) return [ 'Missing code' ];
+        if( !id ) return [ 'Missing id' ];
 
 
-        return [undefined, new GetPQRByIdDto(code)];
+        return [undefined, new GetPQRByIdDto(id)];
 
 
     }

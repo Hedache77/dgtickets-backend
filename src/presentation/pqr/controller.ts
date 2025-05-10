@@ -37,7 +37,7 @@ export class PQRController {
   };
 
   public getPQRById = async (req: Request, res: Response) => {
-    const [error, getPQRByIdDto] = GetPQRByIdDto.create(req.params.id);
+    const [error, getPQRByIdDto] = GetPQRByIdDto.create(+req.params.id);
     if (error) {
       res.status(400).json({ error });
       return;
@@ -45,6 +45,18 @@ export class PQRController {
 
     this.pqrService
       .getPQRById(getPQRByIdDto!)
+      .then((pqr) => res.status(201).json(pqr))
+      .catch((error) => this.handleError(error, res));
+  };
+  public getPQRByUser = async (req: Request, res: Response) => {
+    const [error, getPQRByIdDto] = GetPQRByIdDto.create(+req.params.id);
+    if (error) {
+      res.status(400).json({ error });
+      return;
+    }
+
+    this.pqrService
+      .getPQRByUser(getPQRByIdDto!)
       .then((pqr) => res.status(201).json(pqr))
       .catch((error) => this.handleError(error, res));
   };

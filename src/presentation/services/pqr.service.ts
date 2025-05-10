@@ -23,9 +23,9 @@ export class PQRService {
 
       const pqr = await prisma.pQR.create({
         data: {
-          code: UuidAdapter.v4(),
-          description: createPQRDto.description,
           userId: +createPQRDto.userId,
+          description: createPQRDto.description,
+          answerByUser: 0,
         },
       });
 
@@ -51,6 +51,12 @@ export class PQRService {
     
     if (!pqrFind) throw CustomError.badRequest("PQR not exist");
 
+    const userFind = await prisma.user.findFirst({
+      where: { id: +updatePQRDto.answerByUser },
+    });
+
+    if (!userFind) throw CustomError.badRequest("User not exist");
+
     try {
 
 
@@ -58,10 +64,9 @@ export class PQRService {
         where: { id: pqrFind.id },
 
         data: {
-          description:
-          pqrFind.description != updatePQRDto.description
-              ? updatePQRDto.description
-              : pqrFind.description,
+          pqrType: updatePQRDto.pqrType ? updatePQRDto.pqrType : pqrFind.pqrType,
+          answer: updatePQRDto.answer,
+          answerByUser: +updatePQRDto.answerByUser,
         },
       });
 
@@ -105,12 +110,31 @@ export class PQRService {
   }
 
 async getPQRById(getPQRByIdDto: GetPQRByIdDto) {
-    const { code } = getPQRByIdDto;
+    const { id } = getPQRByIdDto;
 
-    if (!code) throw CustomError.badRequest("code property is required");
+    if (!id) throw CustomError.badRequest("id property is required");
 
     try {
-      const pqr = await prisma.pQR.findFirst({ where: { code } });
+      const pqr = await prisma.pQR.findFirst({ where: { id } });
+
+      if (!pqr) throw CustomError.notFound("pqr not found");
+
+      return {
+        pqr,
+      };
+    } catch (error) {
+      throw CustomError.internalServer(`${error}`);
+    }
+  }
+
+
+  async getPQRByUser(getPQRByIdDto: GetPQRByIdDto) {
+    const { id } = getPQRByIdDto;
+
+    if (!id) throw CustomError.badRequest("id property is required");
+
+    try {
+      const pqr = await prisma.pQR.findMany({ where: { userId: +id } });
 
       if (!pqr) throw CustomError.notFound("pqr not found");
 
