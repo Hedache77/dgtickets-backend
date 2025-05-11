@@ -14,7 +14,7 @@ export class PQRRoutes {
 
         router.get( '/', pqrController.getPQRS );
         router.get( '/:id', pqrController.getPQRById );
-        router.get( '/user/:id', pqrController.getPQRById );
+        router.get( '/user/:id', pqrController.getPQRByUser );
         router.post( '/', pqrController.createPQR );
         router.put( '/:id', pqrController.updatePQR );
 

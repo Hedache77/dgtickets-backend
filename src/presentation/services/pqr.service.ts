@@ -1,3 +1,4 @@
+import { PQRStatus } from "@prisma/client";
 import { UuidAdapter } from "../../config";
 import { prisma } from "../../data/postgres";
 import {
@@ -13,13 +14,11 @@ export class PQRService {
 
   async createPQR(createPQRDto: CreatePQRDto) {
     try {
-
       const user = await prisma.user.findFirst({
         where: { id: +createPQRDto.userId },
       });
-  
-      if (!user) throw CustomError.badRequest("User not exist");
 
+      if (!user) throw CustomError.badRequest("User not exist");
 
       const pqr = await prisma.pQR.create({
         data: {
@@ -38,7 +37,6 @@ export class PQRService {
   }
 
   async updatePQR(updatePQRDto: UpdatePQRDto) {
-
     const id = +updatePQRDto.id;
 
     if (!id) throw CustomError.badRequest("Id property is required");
@@ -48,7 +46,7 @@ export class PQRService {
     const pqrFind = await prisma.pQR.findFirst({
       where: { id },
     });
-    
+
     if (!pqrFind) throw CustomError.badRequest("PQR not exist");
 
     const userFind = await prisma.user.findFirst({
@@ -58,13 +56,13 @@ export class PQRService {
     if (!userFind) throw CustomError.badRequest("User not exist");
 
     try {
-
-
       const pqr = await prisma.pQR.update({
         where: { id: pqrFind.id },
 
         data: {
-          pqrType: updatePQRDto.pqrType ? updatePQRDto.pqrType : pqrFind.pqrType,
+          pqrType: updatePQRDto.pqrType
+            ? updatePQRDto.pqrType
+            : pqrFind.pqrType,
           answer: updatePQRDto.answer,
           answerByUser: +updatePQRDto.answerByUser,
         },
@@ -78,15 +76,20 @@ export class PQRService {
     }
   }
 
-  async getPQRS(paginationDto: PaginationDto) {
+  async getPQRS(paginationDto: PaginationDto, searchPQRType?: string) {
     const { page, limit } = paginationDto;
+
+    const where: any = {
+      pqrType: searchPQRType as PQRStatus,
+    };
 
     try {
       const [total, pqrs] = await Promise.all([
-        prisma.pQR.count(),
+        prisma.pQR.count({ where }),
         prisma.pQR.findMany({
           skip: (page - 1) * limit,
           take: limit,
+          where,
         }),
       ]);
 
@@ -100,8 +103,7 @@ export class PQRService {
           page < totalPages
             ? `/api/pqrs?page=${page + 1}&limit=${limit}`
             : null,
-        prev:
-          page - 1 > 0 ? `/api/pqrs?page=${page - 1}&limit=${limit}` : null,
+        prev: page - 1 > 0 ? `/api/pqrs?page=${page - 1}&limit=${limit}` : null,
         pqrs,
       };
     } catch (error) {
@@ -109,7 +111,7 @@ export class PQRService {
     }
   }
 
-async getPQRById(getPQRByIdDto: GetPQRByIdDto) {
+  async getPQRById(getPQRByIdDto: GetPQRByIdDto) {
     const { id } = getPQRByIdDto;
 
     if (!id) throw CustomError.badRequest("id property is required");
@@ -127,22 +129,45 @@ async getPQRById(getPQRByIdDto: GetPQRByIdDto) {
     }
   }
 
+  async getPQRByUser(
+    paginationDto: PaginationDto,
+    getPQRByIdDto: GetPQRByIdDto
+  ) {
+    const { page, limit } = paginationDto;
 
-  async getPQRByUser(getPQRByIdDto: GetPQRByIdDto) {
     const { id } = getPQRByIdDto;
 
     if (!id) throw CustomError.badRequest("id property is required");
 
-    try {
-      const pqr = await prisma.pQR.findMany({ where: { userId: +id } });
+    const where: any = {
+      userId: +id,
+    };
 
-      if (!pqr) throw CustomError.notFound("pqr not found");
+    try {
+      const [total, pqrs] = await Promise.all([
+        prisma.pQR.count({ where }),
+        prisma.pQR.findMany({
+          skip: (page - 1) * limit,
+          take: limit,
+          where,
+        }),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
 
       return {
-        pqr,
+        page: page,
+        limit: limit,
+        total: total,
+        next:
+          page < totalPages
+            ? `/api/pqrs?page=${page + 1}&limit=${limit}`
+            : null,
+        prev: page - 1 > 0 ? `/api/pqrs?page=${page - 1}&limit=${limit}` : null,
+        pqrs,
       };
     } catch (error) {
-      throw CustomError.internalServer(`${error}`);
+      throw CustomError.internalServer("Internal Server Error");
     }
   }
 }

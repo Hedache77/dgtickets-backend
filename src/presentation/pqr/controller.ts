@@ -23,7 +23,7 @@ export class PQRController {
   };
 
   public getPQRS = async (req: Request, res: Response) => {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, search } = req.query;
     const [error, paginationDto] = PaginationDto.create(+page, +limit);
     if (error) {
       res.status(400).json({ error });
@@ -31,7 +31,7 @@ export class PQRController {
     }
 
     this.pqrService
-      .getPQRS(paginationDto!)
+      .getPQRS(paginationDto!, search as string | undefined)
       .then((pqrs) => res.json(pqrs))
       .catch((error) => this.handleError(error, res));
   };
@@ -49,15 +49,21 @@ export class PQRController {
       .catch((error) => this.handleError(error, res));
   };
   public getPQRByUser = async (req: Request, res: Response) => {
-    const [error, getPQRByIdDto] = GetPQRByIdDto.create(+req.params.id);
+    const { page = 1, limit = 10, search } = req.query;
+    const [error1, getPQRByIdDto] = GetPQRByIdDto.create(+req.params.id);
+    const [error, paginationDto] = PaginationDto.create(+page, +limit);
     if (error) {
+      res.status(400).json({ error });
+      return;
+    }
+    if (error1) {
       res.status(400).json({ error });
       return;
     }
 
     this.pqrService
-      .getPQRByUser(getPQRByIdDto!)
-      .then((pqr) => res.status(201).json(pqr))
+      .getPQRByUser(paginationDto!, getPQRByIdDto!)
+      .then((pqrs) => res.json(pqrs))
       .catch((error) => this.handleError(error, res));
   };
 
