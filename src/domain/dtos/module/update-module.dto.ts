@@ -16,7 +16,7 @@ export class UpdateModuleDto {
         if( !id ) return [ 'Missing id' ];
         if( isNaN(id) ) return [ `id is not a valid type`];
         // if( !name ) return [ 'Missing name' ];
-        if( !isActive ) return [ 'Missing isActive' ];
+        // if( !isActive ) return [ 'Missing isActive' ];
 
         if(userId) {
             if( isNaN(userId) ) return [ `userId is not a valid type`];

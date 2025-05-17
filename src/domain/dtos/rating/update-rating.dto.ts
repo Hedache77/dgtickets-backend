@@ -14,8 +14,8 @@ export class UpdateRatingDto {
         const { id, value, description } = object;
 
         if( !id ) return [ 'Missing id' ];
-        if( !value ) return [ 'Missing value' ];
-        if( !description ) return [ 'Missing description' ];
+        // if( !value ) return [ 'Missing value' ];
+        // if( !description ) return [ 'Missing description' ];
 
 
         return [undefined, new UpdateRatingDto(id, value, description)];

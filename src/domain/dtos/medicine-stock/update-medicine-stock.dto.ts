@@ -27,13 +27,13 @@ export class UpdateMedicineStockDto {
     } = object;
 
     if (!id) return ["Missing id"];
-    if (!name) return ["Missing name"];
-    if (!image) return ["Missing image"];
-    if (!quantity) return ["Missing quantity"];
-    if (!manufacturer) return ["Missing manufacturer"];
-    if (!unitOfMeasure) return ["Missing unitOfMeasure"];
-    if (!quantityPerUnit) return ["Missing quantityPerUnit"];
-    if (!isActive) return ["Missing isActive"];
+    // if (!name) return ["Missing name"];
+    // if (!image) return ["Missing image"];
+    // if (!quantity) return ["Missing quantity"];
+    // if (!manufacturer) return ["Missing manufacturer"];
+    // if (!unitOfMeasure) return ["Missing unitOfMeasure"];
+    // if (!quantityPerUnit) return ["Missing quantityPerUnit"];
+    // if (!isActive) return ["Missing isActive"];
 
     return [
       undefined,
