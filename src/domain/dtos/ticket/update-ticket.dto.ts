@@ -16,12 +16,12 @@ export class UpdateTicketDto {
       object;
 
     if( !id ) return [ 'Missing id' ];
-    if (!priority) return ["Missing priority"];
-    if (priority === undefined) return ["Missing priority"];
+    // if (!priority) return ["Missing priority"];
+    // if (priority === undefined) return ["Missing priority"];
     // if (typeof priority !== "boolean") return ["priority is not a valid type"];
 
-    if (!moduleId) return ["Missing moduleId"];
-    if (!userUpdated) return ["Missing userUpdated"];
+    // if (!moduleId) return ["Missing moduleId"];
+    // if (!userUpdated) return ["Missing userUpdated"];
     // if (isNaN(moduleId)) return [`moduleId is not a valid type`];
 
     return [

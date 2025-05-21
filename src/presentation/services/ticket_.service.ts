@@ -24,7 +24,7 @@ export class TicketService_ {
     private readonly emailService: EmailService,
     private readonly wssService = WssService.instance,
     private readonly moduleService: ModuleService
-  ) {}
+  ) { }
   async onTicketChanged(headquarterId: number, ticketId?: number) {
     if (ticketId) {
       const ticketById = await this.getTicketById({
@@ -154,162 +154,182 @@ export class TicketService_ {
 
     if (!ticketFind) throw CustomError.badRequest("Ticket not exist");
 
-    const moduleExist = await prisma.module.findFirst({
-      where: { id: +updateTicketDto.moduleId },
-    });
-
-    if (!moduleExist) throw CustomError.badRequest("Module not exist");
-
-    const existingInProgress = await prisma.ticket.findFirst({
-      where: {
-        moduleId: +updateTicketDto.moduleId,
-        ticketType: TicketStatus.IN_PROGRESS,
-      },
-    });
-
-    if (existingInProgress && id !== existingInProgress.id) {
-      throw CustomError.badRequest(
-        "The module already has a ticket in progress and cannot handle more than one at a time."
-      );
-    }
-
-    let medicines = updateTicketDto.medicines;
-
-    if (typeof medicines === "string") {
-      try {
-        medicines = JSON.parse(medicines);
-      } catch (error) {
-        throw new Error(`${error}`);
-      }
-    }
-
-    const normalized = Array.isArray(medicines) ? medicines : [medicines];
-
-    const filtered = normalized.filter(
-      (m) => m?.medicineId !== undefined && m?.quantity !== undefined
-    );
-
-    try {
-      const module = await prisma.module.findUnique({
+    if (updateTicketDto.ticketType != TicketStatus.CANCELED) {
+      const moduleExist = await prisma.module.findFirst({
         where: { id: +updateTicketDto.moduleId },
-        select: {
-          headquarterId: true,
+      });
+
+      if (!moduleExist) throw CustomError.badRequest("Module not exist");
+
+      const existingInProgress = await prisma.ticket.findFirst({
+        where: {
+          moduleId: +updateTicketDto.moduleId,
+          ticketType: TicketStatus.IN_PROGRESS,
         },
       });
 
-      for (const med of filtered) {
-        const medicineStock = await prisma.headquarterToMedicine.findFirst({
-          where: {
-            headquarterId: +module!.headquarterId,
-            medicineId: +med.medicineId,
+      if (existingInProgress && id !== existingInProgress.id) {
+        throw CustomError.badRequest(
+          "The module already has a ticket in progress and cannot handle more than one at a time."
+        );
+      }
+
+      let medicines = updateTicketDto.medicines;
+
+      if (typeof medicines === "string") {
+        try {
+          medicines = JSON.parse(medicines);
+        } catch (error) {
+          throw new Error(`${error}`);
+        }
+      }
+
+      const normalized = Array.isArray(medicines) ? medicines : [medicines];
+
+      const filtered = normalized.filter(
+        (m) => m?.medicineId !== undefined && m?.quantity !== undefined
+      );
+
+      try {
+        const module = await prisma.module.findUnique({
+          where: { id: +updateTicketDto.moduleId },
+          select: {
+            headquarterId: true,
           },
         });
 
-        if (!medicineStock)
-          throw CustomError.badRequest(
-            "Medicine not exist or not available in this headquarter"
-          );
+        for (const med of filtered) {
+          const medicineStock = await prisma.headquarterToMedicine.findFirst({
+            where: {
+              headquarterId: +module!.headquarterId,
+              medicineId: +med.medicineId,
+            },
+          });
 
-        if (med.quantity > medicineStock.quantity) {
-          throw CustomError.badRequest("Not enough stock available");
+          if (!medicineStock)
+            throw CustomError.badRequest(
+              "Medicine not exist or not available in this headquarter"
+            );
+
+          if (med.quantity > medicineStock.quantity) {
+            throw CustomError.badRequest("Not enough stock available");
+          }
+
+          await prisma.headquarterToMedicine.update({
+            where: { id: +medicineStock.id },
+            data: {
+              quantity: medicineStock.quantity - +med.quantity,
+            },
+          });
+        }
+      } catch (error) {
+        throw CustomError.internalServer(`${error}`);
+      }
+
+      try {
+        function toBoolean(value: string): boolean {
+          return value.toLowerCase() === "true";
         }
 
-        await prisma.headquarterToMedicine.update({
-          where: { id: +medicineStock.id },
+        let valPriority = toBoolean(updateTicketDto.priority.toString());
+
+        const ticket = await prisma.ticket.update({
+          where: { id: ticketFind.id },
+
           data: {
-            quantity: medicineStock.quantity - +med.quantity,
+            priority:
+              ticketFind.priority != valPriority
+                ? valPriority
+                : ticketFind.priority,
+            ticketType:
+              ticketFind.ticketType != updateTicketDto.ticketType
+                ? updateTicketDto.ticketType
+                : ticketFind.ticketType,
+            moduleId:
+              ticketFind.moduleId != updateTicketDto.moduleId
+                ? +updateTicketDto.moduleId
+                : +ticketFind.moduleId,
           },
         });
-      }
-    } catch (error) {
-      throw CustomError.internalServer(`${error}`);
-    }
 
-    try {
-      function toBoolean(value: string): boolean {
-        return value.toLowerCase() === "true";
-      }
-
-      let valPriority = toBoolean(updateTicketDto.priority.toString());
-
-      const ticket = await prisma.ticket.update({
-        where: { id: ticketFind.id },
-
-        data: {
-          priority:
-            ticketFind.priority != valPriority
-              ? valPriority
-              : ticketFind.priority,
-          ticketType:
-            ticketFind.ticketType != updateTicketDto.ticketType
-              ? updateTicketDto.ticketType
-              : ticketFind.ticketType,
-          moduleId:
-            ticketFind.moduleId != updateTicketDto.moduleId
-              ? +updateTicketDto.moduleId
-              : +ticketFind.moduleId,
-        },
-      });
-
-      await prisma.ticketStatusHistory.create({
-        data: {
-          ticketId: ticket.id,
-          oldStatus: ticketFind.ticketType,
-          newStatus: updateTicketDto.ticketType,
-          userId: +updateTicketDto.userUpdated,
-        },
-      });
-
-      if (filtered.length) {
-        await prisma.ticketMedicine.createMany({
-          data: filtered.map((med) => ({
+        await prisma.ticketStatusHistory.create({
+          data: {
             ticketId: ticket.id,
-            medicineId: med.medicineId,
-            quantity: med.quantity,
-          })),
-          skipDuplicates: true,
+            oldStatus: ticketFind.ticketType,
+            newStatus: updateTicketDto.ticketType,
+            userId: +updateTicketDto.userUpdated,
+          },
         });
-      }
 
-      if (
-        updateTicketDto.ticketType === TicketStatus.IN_PROGRESS &&
-        ticketFind.ticketType === TicketStatus.PENDING
-      ) {
-        await prisma.ticket.update({
+        if (filtered.length) {
+          await prisma.ticketMedicine.createMany({
+            data: filtered.map((med) => ({
+              ticketId: ticket.id,
+              medicineId: med.medicineId,
+              quantity: med.quantity,
+            })),
+            skipDuplicates: true,
+          });
+        }
+
+        if (
+          updateTicketDto.ticketType === TicketStatus.IN_PROGRESS &&
+          ticketFind.ticketType === TicketStatus.PENDING
+        ) {
+          await prisma.ticket.update({
+            where: { id: ticketFind.id },
+
+            data: {
+              pendingTimeInSeconds: getTimeTickets(
+                ticket.createdAt,
+                ticket.updatedAt!
+              ),
+            },
+          });
+        }
+
+        if (
+          updateTicketDto.ticketType === TicketStatus.COMPLETED &&
+          ticketFind.ticketType === TicketStatus.IN_PROGRESS
+        ) {
+          await prisma.ticket.update({
+            where: { id: ticketFind.id },
+
+            data: {
+              processingTimeInSeconds: getTimeTickets(
+                ticketFind.updatedAt!,
+                ticket.updatedAt!
+              ),
+            },
+          });
+        }
+
+        await this.onTicketChanged(+ticket!.headquarterId, +ticket!.id);
+
+        return {
+          ticket,
+        };
+      } catch (error) {
+        throw CustomError.internalServer(`${error}`);
+      }
+    } else {
+      try {
+        const ticket = await prisma.ticket.update({
           where: { id: ticketFind.id },
 
           data: {
-            pendingTimeInSeconds: getTimeTickets(
-              ticket.createdAt,
-              ticket.updatedAt!
-            ),
+            ticketType:
+              ticketFind.ticketType != updateTicketDto.ticketType
+                ? updateTicketDto.ticketType
+                : ticketFind.ticketType,
           },
         });
+        return {
+          ticket,
+        };
+      } catch (error) {
+        throw CustomError.internalServer(`${error}`);
       }
-
-      if (
-        updateTicketDto.ticketType === TicketStatus.COMPLETED &&
-        ticketFind.ticketType === TicketStatus.IN_PROGRESS
-      ) {
-        await prisma.ticket.update({
-          where: { id: ticketFind.id },
-
-          data: {
-            processingTimeInSeconds: getTimeTickets(
-              ticketFind.updatedAt!,
-              ticket.updatedAt!
-            ),
-          },
-        });
-      }
-
-      await this.onTicketChanged(+ticket!.headquarterId, +ticket!.id);
-
-      return {
-        ticket,
-      };
-    } catch (error) {
-      throw CustomError.internalServer(`${error}`);
     }
   }
 
@@ -367,17 +387,17 @@ export class TicketService_ {
 
 
     try {
-    const [total, tickets] = await Promise.all([
-      prisma.ticket.count({ where }),
-      prisma.ticket.findMany({
-        skip: (page - 1) * limit,
-        take: limit,
-        where,
-        include: {
-          rating: true,
-        },
-      }),
-    ]);
+      const [total, tickets] = await Promise.all([
+        prisma.ticket.count({ where }),
+        prisma.ticket.findMany({
+          skip: (page - 1) * limit,
+          take: limit,
+          where,
+          include: {
+            rating: true,
+          },
+        }),
+      ]);
 
       const totalPages = Math.ceil(total / limit);
 
@@ -748,8 +768,8 @@ export class TicketService_ {
               <p>Sede: ${nameHeadquarter}</p>
               <p>Su posición es; ${ticket.position}</p>
               <p>Tiempo estimado de atención ${formatEstimatedTime(
-                ticket.timeToAttend
-              )}</p>
+      ticket.timeToAttend
+    )}</p>
               <a href="${link}">Para realizar seguimiento a su ticket de click aquí</a>
           `;
 
